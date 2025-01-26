@@ -1,7 +1,9 @@
 #ifndef OPTLIB_H
 # define OPTLIB_H
 
-#include "libft.h"
+#include "../libft/libft.h"
 
+
+int ft_getopt(const char *args);
 
 #endif

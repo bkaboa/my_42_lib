@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <stdbool.h>
 
@@ -86,9 +87,9 @@ void ft_swap(void *addr, void *addr2);
 // PRINT FUNCTIONS
 
 // ft_putchar.c
-void    ft_putchar(char c);
+void    ft_putchar(const char c);
 
 // ft_putstr.c
-void    ft_putstr(char *str);
+void    ft_putstr(const char *str);
 
 #endif

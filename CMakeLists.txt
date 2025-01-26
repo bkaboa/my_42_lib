@@ -10,12 +10,24 @@ option(TEST "Build all tests." OFF)
 option(OPTLIB "Build the op library." OFF)
 
 set ( LIBFT_FILES
+    libft/ft_atoi.c
+    libft/ft_is.c
+    libft/ft_memcmp.c
+    libft/ft_memcpy.c
+    libft/ft_memset.c
     libft/ft_putchar.c
     libft/ft_putstr.c
+    libft/ft_realloc.c
+    libft/ft_strcat.c
+    libft/ft_strcmp.c
+    libft/ft_strdup.c
+    libft/ft_strjoin.c
     libft/ft_strlen.c
+    libft/ft_swap.c
+    libft/ft_to.c
 )
 
-set ( OPT_FILES
+set( LIBROPT_FILES
     optLib/ft_getopt.c
 )
 
@@ -29,5 +41,6 @@ project(
 add_library(${LIBFT} STATIC ${LIBFT_FILES})
 
 if (OPTLIB)
-    add_library(${OPT_LIB} STATIC ${OPT_FILES})
+    add_library(${LIBOPT} STATIC ${LIBROPT_FILES})
+    add_dependencies(${LIBOPT} ${LIBFT})
 endif()

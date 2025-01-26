@@ -38,13 +38,13 @@ bool ft_isdecimal(const char *str)
                 {
                     return (false);
                 }
-                dec_addr = str;
+                dec_addr = (void*)str;
             }
             else if (*str == 'e' || *str == 'E')
             {
                 if (exp_addr)
                     return (false);
-                exp_addr = str;
+                exp_addr = (void*)str;
             }
             else
                 return (false);
