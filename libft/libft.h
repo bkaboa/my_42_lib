@@ -92,4 +92,13 @@ void    ft_putchar(const char c);
 // ft_putstr.c
 void    ft_putstr(const char *str);
 
+/* -------------------------------- */
+
+// NUMBERS FUNCTIONS
+
+// ft_atoi.c
+int ft_atoi(const char *str);
+long ft_atol(const char *str);
+int ft_atoi_base(const char *str, int base);
+
 #endif
