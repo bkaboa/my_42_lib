@@ -2,6 +2,7 @@
 # define OPTLIB_H
 
 #include "../libft/libft.h"
+#include <stdio.h>
 
 #define OPT_ERROR 1
 #define OPT_SUCCESS 0
@@ -26,7 +27,6 @@ typedef struct {
 }   t_opt;
 
 
-void free_opt(t_opt *opt);
 int ft_set_main_opt(t_opt **opt, const enum opt_types type, const char *description);
 int ft_add_new_opt(const char *short_opt, const char *long_opt, const enum opt_types type, const char *description, t_opt *opt);
 

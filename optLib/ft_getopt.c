@@ -39,7 +39,7 @@ int opt_set_main(t_opt **opt, const enum opt_types type, const char *description
         return (OPT_ERROR);
     (*opt)->short_opt = NULL;
     (*opt)->long_opt = NULL;
-    (*opt)->description = description;
+    (*opt)->description = (char*)description;
     (*opt)->value = NULL;
     (*opt)->type = type;
     (*opt)->next = NULL;
@@ -54,9 +54,9 @@ int opt_add_new(const char *short_opt, const char *long_opt, const enum opt_type
     t_opt *new_opt = malloc(sizeof(t_opt));
     if (new_opt == NULL)
         return (OPT_ERROR);
-    new_opt->short_opt = short_opt;
-    new_opt->long_opt = long_opt;
-    new_opt->description = description;
+    new_opt->short_opt = (char*)short_opt;
+    new_opt->long_opt = (char*)long_opt;
+    new_opt->description = (char*)description;
     new_opt->type = type;
     new_opt->arr_elem_size = 0;
     new_opt->value = NULL;
@@ -107,7 +107,7 @@ static int take_array(const char *arg, t_opt *opt)
         for (int i = 0; i < opt->arr_elem_size; i++)
         {
             if (i == opt->arr_elem_size - 1)
-                ((char**)opt->value)[i] = arg;
+                ((char**)opt->value)[i] = (char*)arg;
             else
                 ((char**)opt->value)[i] = ((char**)tmp)[i];
         }
@@ -123,13 +123,13 @@ static int take_arg(const char *arg, t_opt *opt)
          if (opt->value == NULL)
          {
              printf("Error while taking array\n");
-             opt_destroy(opt);
+             opt_destroy(&opt);
              return (OPT_ERROR);
          }
     }
     if (opt->type == OPT_STRING)
     {
-        *((char **)opt->value) = arg;
+        *((char **)opt->value) = (char*)arg;
     }
     else if (opt->type == OPT_LONG)
     {
@@ -137,7 +137,7 @@ static int take_arg(const char *arg, t_opt *opt)
         {
             printf("Invalid argument: %s\n", arg);
             print_help(opt);
-            opt_destroy(opt);
+            opt_destroy(&opt);
             return (OPT_ERROR);
         }
         *((int64_t *)opt->value) = ft_atol(arg);
@@ -164,14 +164,14 @@ int ft_getopt(const char **args, const int argc, t_opt *opt)
                 if (opt->short_opt != NULL && ft_strcmp(opt->short_opt, args[i]) == 0)
                 {
                     i += 1;
-                    if (take_arg(args, opt) == OPT_ERROR)
+                    if (take_arg(args[i], opt) == OPT_ERROR)
                         return (OPT_ERROR);
                     break;
                 }
                 else if (opt->long_opt != NULL && ft_strcmp(opt->long_opt, args[i]) == 0)
                 {
                     i += 1;
-                    if (take_arg(args, opt) == OPT_ERROR)
+                    if (take_arg(args[i], opt) == OPT_ERROR)
                         return (OPT_ERROR);
                     break;
                 }
@@ -194,7 +194,7 @@ int ft_getopt(const char **args, const int argc, t_opt *opt)
                 free_opt(tmp);
                 return (OPT_ERROR);
             }
-            take_arg(args, opt);
+            take_arg(args[i], opt);
         }
         i++;
     }
