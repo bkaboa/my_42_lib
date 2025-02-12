@@ -1,0 +1,11 @@
+{
+    "configurePresets": [
+        {
+            "name": "default",
+            "hidden": false,
+            "description": "Default configuration",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build"
+        }
+    ]
+}

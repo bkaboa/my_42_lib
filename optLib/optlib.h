@@ -20,6 +20,7 @@ typedef struct {
     char *description;
     u_int8_t type;
     size_t arr_elem_size;
+    size_t option;
     bool active;
     void *value;
     void *next;
@@ -27,11 +28,13 @@ typedef struct {
 }   t_opt;
 
 
-int ft_set_main_opt(t_opt **opt, const enum opt_types type, const char *description);
-int ft_add_new_opt(const char *short_opt, const char *long_opt, const enum opt_types type, const char *description, t_opt *opt);
+int opt_set_main(t_opt **opt, const enum opt_types type, const char *description);
+void opt_destroy(t_opt **opt);
+int opt_add_new(const char *short_opt, const char *long_opt, const enum opt_types type, const char *description, size_t option, t_opt *opt);
+void opt_print_help(const t_opt *opt);
+
+void debug_opt(t_opt *opt);
 
 int ft_getopt(const char **args, const int argc, t_opt *opt);
-
-void print_help(t_opt *opt);
 
 #endif

@@ -30,7 +30,62 @@ void opt_destroy(t_opt **opt)
     *opt = NULL;
 }
 
-int opt_set_main(t_opt **opt, const enum opt_types type, const char *description)
+void debug_opt(t_opt *opt)
+{
+    while (opt != NULL)
+    {
+        dprintf(STDERR_FILENO, "opt address: %p\n", opt);
+        dprintf(STDERR_FILENO, "next address: %p\n", opt->next);
+        dprintf(STDERR_FILENO, "prev address: %p\n", opt->prev);
+        dprintf(STDERR_FILENO, "short_opt: %s\n", opt->short_opt);
+        dprintf(STDERR_FILENO, "long_opt: %s\n", opt->long_opt);
+        dprintf(STDERR_FILENO, "description: %s\n", opt->description);
+        dprintf(STDERR_FILENO, "type: %d\n", opt->type);
+        dprintf(STDERR_FILENO, "arr_elem_size: %ld\n", opt->arr_elem_size);
+        dprintf(STDERR_FILENO, "option: %ld\n", opt->option);
+        dprintf(STDERR_FILENO, "active: %d\n", opt->active);
+        if (opt->value == NULL)
+            dprintf(STDERR_FILENO, "value: NULL\n");
+        else {
+
+            if (opt->type & OPT_ARRAY)
+            {
+                if (opt->type & OPT_LONG)
+                {
+                    for (int i = 0; i < opt->arr_elem_size; i++)
+                        dprintf(STDERR_FILENO, "value[%d]: %ld\n", i, ((int64_t*)opt->value)[i]);
+                }
+                else if (opt->type & OPT_STRING)
+                {
+                    for (int i = 0; i < opt->arr_elem_size; i++)
+                        dprintf(STDERR_FILENO, "value[%d]: %s\n", i, ((char**)opt->value)[i]);
+                }
+            }
+            else
+            {
+                if (opt->type & OPT_LONG)
+                    dprintf(STDERR_FILENO, "value: %ld\n", *((int64_t*)opt->value));
+                else if (opt->type & OPT_STRING)
+                    dprintf(STDERR_FILENO, "value: %s\n", *((char**)opt->value));
+            }
+        }
+        dprintf(STDERR_FILENO, "\n-----------------------------------------------------------------------------\n");
+        opt = opt->next;
+    }
+}
+
+/**
+ * @brief 
+ * 
+ * @param opt 
+ * @param type 
+ * @param description 
+ * @return OPT_SUCCESS if the main option is set successfully //
+ * @return OPT_ERROR if an error occured
+ * 
+ * set the main option of the list can be an array or a single value
+ */
+int opt_set_main(t_opt **opt, const enum opt_types type, const char description[])
 {
     if (opt == NULL)
         return (OPT_ERROR);
@@ -44,9 +99,25 @@ int opt_set_main(t_opt **opt, const enum opt_types type, const char *description
     (*opt)->type = type;
     (*opt)->next = NULL;
     (*opt)->prev = NULL;
+    return (OPT_SUCCESS);
 }
 
-int opt_add_new(const char *short_opt, const char *long_opt, const enum opt_types type, const char *description, t_opt *opt)
+/**
+ * @brief 
+ * 
+ * @param short_opt 
+ * @param long_opt 
+ * @param type 
+ * @param description 
+ * @param opt 
+ * @return OPT_SUCCESS if the option is added successfully //
+ * @return OPT_ERROR if an error occured
+ * 
+ * add a new option to the list
+ * 
+ * you need to put character \'-\' before the short option or the long option
+ */
+int opt_add_new(const char *short_opt, const char *long_opt, const enum opt_types type, const char *description, size_t option, t_opt *opt)
 {
     if (opt == NULL)
         return (OPT_ERROR);
@@ -61,21 +132,30 @@ int opt_add_new(const char *short_opt, const char *long_opt, const enum opt_type
     new_opt->arr_elem_size = 0;
     new_opt->value = NULL;
     new_opt->next = NULL;
-    new_opt->prev = opt;
+    new_opt->option = option;
     while (opt->next != NULL)
         opt = opt->next;
     opt->next = new_opt;
+    new_opt->prev = opt;
+    return (OPT_SUCCESS);
 }
 
+/**
+ * @brief 
+ * 
+ * @param opt 
+ * 
+ * print the help of the options
+ */
 void opt_print_help(const t_opt *opt)
 {
     while (opt != NULL)
     {
         if (opt->short_opt != NULL)
-            printf("%s, ", opt->short_opt);
+            dprintf(STDERR_FILENO, "%s, ", opt->short_opt);
         if (opt->long_opt != NULL)
-            printf("%s, ", opt->long_opt);
-        printf("%s\n", opt->description);
+            dprintf(STDERR_FILENO, "%s, ", opt->long_opt);
+        dprintf(STDERR_FILENO, "%s\n", opt->description);
         opt = opt->next;
     }
 }
@@ -112,6 +192,7 @@ static int take_array(const char *arg, t_opt *opt)
                 ((char**)opt->value)[i] = ((char**)tmp)[i];
         }
     }
+    return (OPT_SUCCESS);
 }
 
 static int take_arg(const char *arg, t_opt *opt)
@@ -119,13 +200,13 @@ static int take_arg(const char *arg, t_opt *opt)
     opt->active = true;
     if (opt->type & OPT_ARRAY)
     {
-         take_array(arg, opt);
-         if (opt->value == NULL)
-         {
-             printf("Error while taking array\n");
-             opt_destroy(&opt);
-             return (OPT_ERROR);
-         }
+        take_array(arg, opt);
+        if (opt->value == NULL)
+        {
+           dprintf(STDERR_FILENO, "Error while taking array\n");
+           opt_destroy(&opt);
+           return (OPT_ERROR);
+        }
     }
     if (opt->type == OPT_STRING)
     {
@@ -135,8 +216,8 @@ static int take_arg(const char *arg, t_opt *opt)
     {
         if (ft_isnumber(arg) == 0)
         {
-            printf("Invalid argument: %s\n", arg);
-            print_help(opt);
+            dprintf(STDERR_FILENO, "Invalid argument: %s\n", arg);
+            opt_print_help(opt);
             opt_destroy(&opt);
             return (OPT_ERROR);
         }
@@ -146,55 +227,68 @@ static int take_arg(const char *arg, t_opt *opt)
     {
         return (OPT_ERROR);
     }
+    return (OPT_SUCCESS);
 }
 
-int ft_getopt(const char **args, const int argc, t_opt *opt)
+/**
+ * @brief 
+ * 
+ * @param argv
+ * @param argc 
+ * @param opt 
+ * @return OPT_SUCCESS if the options are taken successfully //
+ * @return OPT_ERROR if an error occured
+ * 
+ * take the options from the command line
+ */
+int ft_getopt(const char **argv, const int argc, t_opt *opt)
 {
-    if (args == NULL || opt == NULL)
+    if (argv == NULL || opt == NULL)
         return (OPT_ERROR);
     int i = 1;
     t_opt *tmp = opt;
     while (i < argc)
     {
         opt = tmp;
-        if (args[i][0] == '-')
+        dprintf(STDERR_FILENO, "argv[%d]: %s\n", i, argv[i]);
+        if (argv[i][0] == '-')
         {
             while (opt->next != NULL)
             {
-                if (opt->short_opt != NULL && ft_strcmp(opt->short_opt, args[i]) == 0)
+                if (opt->short_opt != NULL && ft_strcmp(opt->short_opt, argv[i]) == 0)
                 {
                     i += 1;
-                    if (take_arg(args[i], opt) == OPT_ERROR)
+                    if (take_arg(argv[i], opt) == OPT_ERROR)
                         return (OPT_ERROR);
                     break;
                 }
-                else if (opt->long_opt != NULL && ft_strcmp(opt->long_opt, args[i]) == 0)
+                else if (opt->long_opt != NULL && ft_strcmp(opt->long_opt, argv[i]) == 0)
                 {
                     i += 1;
-                    if (take_arg(args[i], opt) == OPT_ERROR)
+                    if (take_arg(argv[i], opt) == OPT_ERROR)
                         return (OPT_ERROR);
                     break;
                 }
                 opt = opt->next;
                 if (opt->next == NULL)
                 {
-                    printf("Invalid option: %s\n", args[i]);
-                    print_help(tmp);
+                    dprintf(STDERR_FILENO, "Invalid option: %s\n", argv[i]);
+                    opt_print_help(tmp);
                     free_opt(tmp);
                     return (OPT_ERROR);
                 }
-                i += 1;
             }
+            i += 1;
         }
         else
         {
             if (opt->value != NULL && !(opt->type & OPT_ARRAY)) {
-                printf("can't redefine main argument\n");
+                dprintf(STDERR_FILENO, "can't redefine main argument\n");
                 opt_print_help(tmp);
                 free_opt(tmp);
                 return (OPT_ERROR);
             }
-            take_arg(args[i], opt);
+            take_arg(argv[i], opt);
         }
         i++;
     }

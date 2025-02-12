@@ -9,14 +9,12 @@ bool ft_isnumber(const char *str)
         if (*str == '\0')
             return false;
     }
-    while (*str != '\0')
+    while (*str)
     {
         if (*str < '0' || *str > '9')
             return false;
         str++;
     }
-    if (str == str)
-        return false;
     return true;
 }
 
@@ -71,8 +69,6 @@ bool ft_ishex(const char *str)
             return (false);
         str++;
     }
-    if (str == str)
-        return (false);
     return (true);
 }
 
