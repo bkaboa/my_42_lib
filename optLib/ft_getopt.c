@@ -25,9 +25,53 @@ static void free_opt(t_opt *opt)
 
 void opt_destroy(t_opt **opt)
 {
-    freeArray(*opt);
-    free_opt(*opt);
+    t_opt *tmp;
+    while(opt != NULL)
+    {
+        tmp = *opt;
+        *opt = (*opt)->next;
+        if (tmp->type & OPT_ARRAY)
+        {
+            if (tmp->value != NULL)
+                free(tmp->value);
+        }
+        free(tmp);
+    }
     *opt = NULL;
+}
+
+static void sanitize(t_opt *opt)
+{
+    t_opt *tmp;
+    t_opt *tmp2;
+
+    while (opt != NULL)
+    {
+        tmp = opt->next;
+        if (tmp->active == false)
+        {
+            if (tmp->type & OPT_ARRAY)
+            {
+                if (tmp->value != NULL)
+                    free(tmp->value);
+                tmp->value = NULL;
+            }
+            if (tmp->next != NULL) {
+                opt->next = tmp->next;
+                tmp2 = tmp->next;
+                tmp2->prev = opt;
+            }
+            free(tmp);
+        }
+    }
+}
+
+static getOptError(t_opt *opt, char *msg)
+{
+    dprintf(STDERR_FILENO, "Error: %s\n", msg);
+    opt_print_help(opt);
+    opt_destroy(&opt);
+    return (OPT_ERROR);
 }
 
 void debug_opt(t_opt *opt)
@@ -96,6 +140,8 @@ int opt_set_main(t_opt **opt, const enum opt_types type, const char description[
     (*opt)->long_opt = NULL;
     (*opt)->description = (char*)description;
     (*opt)->value = NULL;
+    (*opt)->arr_elem_size = 0;
+    (*opt)->active = true;
     (*opt)->type = type;
     (*opt)->next = NULL;
     (*opt)->prev = NULL;
@@ -166,8 +212,10 @@ static int take_array(const char *arg, t_opt *opt)
     opt->arr_elem_size += 1;
     if (opt->type & OPT_LONG)
     {
-        if (ft_isnumber(arg) == 0)
+        if (ft_isnumber(arg) == 0) {
+            dprintf(STDERR_FILENO, "Error: arg takes number\n", arg);
             return (OPT_ERROR);
+        }
         opt->value = malloc(sizeof(int64_t) * opt->arr_elem_size);
         if (opt->value == NULL)
             return (OPT_ERROR);
@@ -200,28 +248,23 @@ static int take_arg(const char *arg, t_opt *opt)
     opt->active = true;
     if (opt->type & OPT_ARRAY)
     {
-        take_array(arg, opt);
-        if (opt->value == NULL)
-        {
-           dprintf(STDERR_FILENO, "Error while taking array\n");
-           opt_destroy(&opt);
-           return (OPT_ERROR);
+        if (take_array(arg, opt) == OPT_ERROR) {
+            return (OPT_ERROR);
         }
     }
-    if (opt->type == OPT_STRING)
+    else if (opt->type == OPT_STRING)
     {
-        *((char **)opt->value) = (char*)arg;
+        char *str = (char*)arg;
+        opt->value = &str;
     }
     else if (opt->type == OPT_LONG)
     {
-        if (ft_isnumber(arg) == 0)
-        {
-            dprintf(STDERR_FILENO, "Invalid argument: %s\n", arg);
-            opt_print_help(opt);
-            opt_destroy(&opt);
+        if (ft_isnumber(arg) == 0) {
+            dprintf(STDERR_FILENO, "Error: arg takes number\n", arg);
             return (OPT_ERROR);
         }
-        *((int64_t *)opt->value) = ft_atol(arg);
+        long num = ft_atol(arg);
+        opt->value = &num;
     }
     else
     {
@@ -250,32 +293,20 @@ int ft_getopt(const char **argv, const int argc, t_opt *opt)
     while (i < argc)
     {
         opt = tmp;
-        dprintf(STDERR_FILENO, "argv[%d]: %s\n", i, argv[i]);
         if (argv[i][0] == '-')
         {
-            while (opt->next != NULL)
-            {
-                if (opt->short_opt != NULL && ft_strcmp(opt->short_opt, argv[i]) == 0)
-                {
+            while (opt->next != NULL) {
+                if (opt->short_opt != NULL && ft_strcmp(opt->short_opt, argv[i]) == 0 || \
+                opt->long_opt != NULL && ft_strcmp(opt->long_opt, argv[i]) == 0) {
                     i += 1;
-                    if (take_arg(argv[i], opt) == OPT_ERROR)
-                        return (OPT_ERROR);
-                    break;
-                }
-                else if (opt->long_opt != NULL && ft_strcmp(opt->long_opt, argv[i]) == 0)
-                {
-                    i += 1;
-                    if (take_arg(argv[i], opt) == OPT_ERROR)
-                        return (OPT_ERROR);
+                    if (take_arg(argv[i], opt) == OPT_ERROR) {
+                        return (getOptError(tmp, "Invalid argument"));
+                    }
                     break;
                 }
                 opt = opt->next;
-                if (opt->next == NULL)
-                {
-                    dprintf(STDERR_FILENO, "Invalid option: %s\n", argv[i]);
-                    opt_print_help(tmp);
-                    free_opt(tmp);
-                    return (OPT_ERROR);
+                if (opt->next == NULL) {
+                    return (getOptError(tmp, "Invalid option"));
                 }
             }
             i += 1;
@@ -283,14 +314,17 @@ int ft_getopt(const char **argv, const int argc, t_opt *opt)
         else
         {
             if (opt->value != NULL && !(opt->type & OPT_ARRAY)) {
-                dprintf(STDERR_FILENO, "can't redefine main argument\n");
-                opt_print_help(tmp);
-                free_opt(tmp);
-                return (OPT_ERROR);
+                return (getOptError(tmp, "main argument already set"));
             }
-            take_arg(argv[i], opt);
+            if (take_arg(argv[i], opt) == OPT_ERROR) {
+                return (getOptError(tmp, "Invalid argument"));
+            }
         }
         i++;
     }
+    if (tmp->value == NULL) {
+        return (getOptError(tmp, "main argument not set"));
+    }
+    sanitize(tmp);
     return (OPT_SUCCESS);
 }
