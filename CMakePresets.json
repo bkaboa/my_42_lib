@@ -5,7 +5,8 @@
             "hidden": false,
             "description": "Default configuration",
             "generator": "Unix Makefiles",
-            "binaryDir": "${sourceDir}/build"
+            "binaryDir": "${sourceDir}/build",
+            "installDir": "${sourceDir}/install"
         }
     ]
 }

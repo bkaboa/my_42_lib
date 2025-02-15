@@ -283,6 +283,7 @@ static int take_arg(const char *arg, t_opt *opt)
  * @return OPT_ERROR if an error occured
  * 
  * take the options from the command line
+ * be aware the options list is sanitized after the call (remove the unused options)
  */
 int ft_getopt(const char **argv, const int argc, t_opt *opt)
 {
