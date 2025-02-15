@@ -15,7 +15,7 @@ enum opt_types {
 };
 
 typedef struct {
-    char *short_opt;
+    char short_opt;
     char *long_opt;
     char *description;
     u_int8_t type;
@@ -30,7 +30,7 @@ typedef struct {
 
 int opt_set_main(t_opt **opt, const enum opt_types type, const char *description);
 void opt_destroy(t_opt **opt);
-int opt_add_new(const char *short_opt, const char *long_opt, const enum opt_types type, const char *description, size_t option, t_opt *opt);
+int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types type, const char *description, size_t option, t_opt *opt);
 void opt_print_help(const t_opt *opt);
 
 void debug_opt(t_opt *opt);

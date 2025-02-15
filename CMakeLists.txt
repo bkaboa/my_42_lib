@@ -38,6 +38,8 @@ project(
     LANGUAGES C
 )
 
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/lib)
+
 add_library(${LIBFT} STATIC ${LIBFT_FILES})
 
 if (OPTLIB)

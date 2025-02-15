@@ -1,12 +1,15 @@
 {
+    "version": 3,
     "configurePresets": [
         {
-            "name": "default",
+            "name": "optLib",
             "hidden": false,
-            "description": "Default configuration",
+            "description": "Build the library with cli manager",
             "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/build",
-            "installDir": "${sourceDir}/install"
+            "cacheVariables": {
+                "OPTLIB": "ON"
+            }
         }
     ]
 }

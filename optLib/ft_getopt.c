@@ -66,7 +66,7 @@ static void sanitize(t_opt *opt)
     }
 }
 
-static getOptError(t_opt *opt, char *msg)
+static int getOptError(t_opt *opt, char *msg)
 {
     dprintf(STDERR_FILENO, "Error: %s\n", msg);
     opt_print_help(opt);
@@ -81,7 +81,7 @@ void debug_opt(t_opt *opt)
         dprintf(STDERR_FILENO, "opt address: %p\n", opt);
         dprintf(STDERR_FILENO, "next address: %p\n", opt->next);
         dprintf(STDERR_FILENO, "prev address: %p\n", opt->prev);
-        dprintf(STDERR_FILENO, "short_opt: %s\n", opt->short_opt);
+        dprintf(STDERR_FILENO, "short_opt: %c\n", opt->short_opt);
         dprintf(STDERR_FILENO, "long_opt: %s\n", opt->long_opt);
         dprintf(STDERR_FILENO, "description: %s\n", opt->description);
         dprintf(STDERR_FILENO, "type: %d\n", opt->type);
@@ -136,7 +136,7 @@ int opt_set_main(t_opt **opt, const enum opt_types type, const char description[
     *opt = malloc(sizeof(t_opt));
     if (*opt == NULL)
         return (OPT_ERROR);
-    (*opt)->short_opt = NULL;
+    (*opt)->short_opt = 0;
     (*opt)->long_opt = NULL;
     (*opt)->description = (char*)description;
     (*opt)->value = NULL;
@@ -163,7 +163,7 @@ int opt_set_main(t_opt **opt, const enum opt_types type, const char description[
  * 
  * you need to put character \'-\' before the short option or the long option
  */
-int opt_add_new(const char *short_opt, const char *long_opt, const enum opt_types type, const char *description, size_t option, t_opt *opt)
+int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types type, const char *description, size_t option, t_opt *opt)
 {
     if (opt == NULL)
         return (OPT_ERROR);
@@ -171,7 +171,7 @@ int opt_add_new(const char *short_opt, const char *long_opt, const enum opt_type
     t_opt *new_opt = malloc(sizeof(t_opt));
     if (new_opt == NULL)
         return (OPT_ERROR);
-    new_opt->short_opt = (char*)short_opt;
+    new_opt->short_opt = (char)short_opt;
     new_opt->long_opt = (char*)long_opt;
     new_opt->description = (char*)description;
     new_opt->type = type;
@@ -197,8 +197,8 @@ void opt_print_help(const t_opt *opt)
 {
     while (opt != NULL)
     {
-        if (opt->short_opt != NULL)
-            dprintf(STDERR_FILENO, "%s, ", opt->short_opt);
+        if (opt->short_opt != 0)
+            dprintf(STDERR_FILENO, "%c, ", opt->short_opt);
         if (opt->long_opt != NULL)
             dprintf(STDERR_FILENO, "%s, ", opt->long_opt);
         dprintf(STDERR_FILENO, "%s\n", opt->description);
@@ -245,7 +245,6 @@ static int take_array(const char *arg, t_opt *opt)
 
 static int take_arg(const char *arg, t_opt *opt)
 {
-    opt->active = true;
     if (opt->type & OPT_ARRAY)
     {
         if (take_array(arg, opt) == OPT_ERROR) {
@@ -290,20 +289,45 @@ int ft_getopt(const char **argv, const int argc, t_opt *opt)
     if (argv == NULL || opt == NULL)
         return (OPT_ERROR);
     int i = 1;
+    int j = 0;
+    bool is_long_opt = false;
     t_opt *tmp = opt;
     while (i < argc)
     {
         opt = tmp;
         if (argv[i][0] == '-')
         {
-            while (opt->next != NULL) {
-                if (opt->short_opt != NULL && ft_strcmp(opt->short_opt, argv[i]) == 0 || \
-                opt->long_opt != NULL && ft_strcmp(opt->long_opt, argv[i]) == 0) {
-                    i += 1;
-                    if (take_arg(argv[i], opt) == OPT_ERROR) {
-                        return (getOptError(tmp, "Invalid argument"));
+            if (argv[i][1] == '\0')
+                return (getOptError(tmp, "Invalid option"));
+            if (argv[i][1] == '-')
+                is_long_opt = true;
+            j = 1;
+            while (opt->next != NULL && argv[i][j] != '\0') {
+                if (is_long_opt == true) {
+                    if (ft_strcmp(opt->long_opt, &(argv[i][2])) == 0) {
+                        opt->active = true;
+                        i += 1;
+                        if (opt->type != OPT_NONE) {
+                            if (take_arg(argv[i], opt) == OPT_ERROR) {
+                                return (getOptError(tmp, "Invalid argument"));
+                            }
+                            break;
+                        }
                     }
-                    break;
+                }
+                else {
+                    if (opt->short_opt == argv[i][j]) {
+                        opt->active = true;
+                        if (opt->type != OPT_NONE) {
+                            i += 1;
+                            if (take_arg(argv[i], opt) == OPT_ERROR) {
+                                return (getOptError(tmp, "Invalid argument"));
+                            }
+                            break;
+                        }
+                        j += 1;
+                        opt = tmp;
+                    }
                 }
                 opt = opt->next;
                 if (opt->next == NULL) {
