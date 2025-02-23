@@ -103,4 +103,14 @@ int ft_atoi(const char *str);
 long ft_atol(const char *str);
 int ft_atoi_base(const char *str, int base);
 
+/* -------------------------------- */
+
+// NETWORK FUNCTIONS
+
+// ntoh.c
+u_int64_t ntohst(const u_int64_t data);
+
+// hton.c
+u_int64_t htonst(const u_int64_t data);
+
 #endif

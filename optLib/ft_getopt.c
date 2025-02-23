@@ -26,7 +26,7 @@ static void free_opt(t_opt *opt)
 void opt_destroy(t_opt **opt)
 {
     t_opt *tmp;
-    while(opt != NULL)
+    while(*opt != NULL)
     {
         tmp = *opt;
         *opt = (*opt)->next;
@@ -42,10 +42,10 @@ void opt_destroy(t_opt **opt)
 
 static void sanitize(t_opt *opt)
 {
-    t_opt *tmp;
-    t_opt *tmp2;
+    t_opt *tmp = NULL;
+    t_opt *tmp2 = NULL;
 
-    while (opt != NULL)
+    while (opt->next != NULL)
     {
         tmp = opt->next;
         if (tmp->active == false)
@@ -56,13 +56,15 @@ static void sanitize(t_opt *opt)
                     free(tmp->value);
                 tmp->value = NULL;
             }
+            opt->next = tmp->next;
             if (tmp->next != NULL) {
-                opt->next = tmp->next;
                 tmp2 = tmp->next;
                 tmp2->prev = opt;
             }
             free(tmp);
         }
+        else
+            opt = opt->next;
     }
 }
 
@@ -91,7 +93,6 @@ void debug_opt(t_opt *opt)
         if (opt->value == NULL)
             dprintf(STDERR_FILENO, "value: NULL\n");
         else {
-
             if (opt->type & OPT_ARRAY)
             {
                 if (opt->type & OPT_LONG)
@@ -108,9 +109,9 @@ void debug_opt(t_opt *opt)
             else
             {
                 if (opt->type & OPT_LONG)
-                    dprintf(STDERR_FILENO, "value: %ld\n", *((int64_t*)opt->value));
+                    dprintf(STDERR_FILENO, "value: %ld\n", (int64_t)opt->value);
                 else if (opt->type & OPT_STRING)
-                    dprintf(STDERR_FILENO, "value: %s\n", *((char**)opt->value));
+                    dprintf(STDERR_FILENO, "value: %s\n", ((char*)opt->value));
             }
         }
         dprintf(STDERR_FILENO, "\n-----------------------------------------------------------------------------\n");
@@ -198,9 +199,9 @@ void opt_print_help(const t_opt *opt)
     while (opt != NULL)
     {
         if (opt->short_opt != 0)
-            dprintf(STDERR_FILENO, "%c, ", opt->short_opt);
+            dprintf(STDERR_FILENO, "-%c     ", opt->short_opt);
         if (opt->long_opt != NULL)
-            dprintf(STDERR_FILENO, "%s, ", opt->long_opt);
+            dprintf(STDERR_FILENO, "--%s,  ", opt->long_opt);
         dprintf(STDERR_FILENO, "%s\n", opt->description);
         opt = opt->next;
     }
@@ -254,7 +255,7 @@ static int take_arg(const char *arg, t_opt *opt)
     else if (opt->type == OPT_STRING)
     {
         char *str = (char*)arg;
-        opt->value = &str;
+        opt->value = str;
     }
     else if (opt->type == OPT_LONG)
     {
@@ -263,7 +264,7 @@ static int take_arg(const char *arg, t_opt *opt)
             return (OPT_ERROR);
         }
         long num = ft_atol(arg);
-        opt->value = &num;
+        opt->value = (void*)num;
     }
     else
     {
@@ -297,22 +298,23 @@ int ft_getopt(const char **argv, const int argc, t_opt *opt)
         opt = tmp;
         if (argv[i][0] == '-')
         {
+            is_long_opt = false;
             if (argv[i][1] == '\0')
                 return (getOptError(tmp, "Invalid option"));
             if (argv[i][1] == '-')
                 is_long_opt = true;
             j = 1;
-            while (opt->next != NULL && argv[i][j] != '\0') {
+            while (opt != NULL && argv[i][j] != '\0') {
                 if (is_long_opt == true) {
                     if (ft_strcmp(opt->long_opt, &(argv[i][2])) == 0) {
                         opt->active = true;
-                        i += 1;
                         if (opt->type != OPT_NONE) {
+                            i += 1;
                             if (take_arg(argv[i], opt) == OPT_ERROR) {
                                 return (getOptError(tmp, "Invalid argument"));
                             }
-                            break;
                         }
+                        break;
                     }
                 }
                 else {
@@ -330,7 +332,7 @@ int ft_getopt(const char **argv, const int argc, t_opt *opt)
                     }
                 }
                 opt = opt->next;
-                if (opt->next == NULL) {
+                if (opt == NULL) {
                     return (getOptError(tmp, "Invalid option"));
                 }
             }
@@ -344,12 +346,11 @@ int ft_getopt(const char **argv, const int argc, t_opt *opt)
             if (take_arg(argv[i], opt) == OPT_ERROR) {
                 return (getOptError(tmp, "Invalid argument"));
             }
+            i += 1;
         }
-        i++;
     }
     if (tmp->value == NULL) {
         return (getOptError(tmp, "main argument not set"));
     }
-    sanitize(tmp);
     return (OPT_SUCCESS);
 }
