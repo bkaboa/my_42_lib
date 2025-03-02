@@ -349,8 +349,5 @@ int ft_getopt(const char **argv, const int argc, t_opt *opt)
             i += 1;
         }
     }
-    if (tmp->value == NULL) {
-        return (getOptError(tmp, "main argument not set"));
-    }
     return (OPT_SUCCESS);
 }
