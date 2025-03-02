@@ -27,6 +27,11 @@ typedef struct {
     void *prev;
 }   t_opt;
 
+typedef struct {
+    t_opt *head;
+    t_opt *tail;
+    t_opt *main;
+}  t_opt_list;
 
 int opt_set_main(t_opt **opt, const enum opt_types type, const char *description);
 void opt_destroy(t_opt **opt);

@@ -130,22 +130,20 @@ void debug_opt(t_opt *opt)
  * 
  * set the main option of the list can be an array or a single value
  */
-int opt_set_main(t_opt **opt, const enum opt_types type, const char description[])
+int opt_set_main(t_opt_list *opt_list, const enum opt_types type, const char description[])
 {
-    if (opt == NULL)
+    opt_list->main = malloc(sizeof(t_opt));
+    if (opt_list->main == NULL)
         return (OPT_ERROR);
-    *opt = malloc(sizeof(t_opt));
-    if (*opt == NULL)
-        return (OPT_ERROR);
-    (*opt)->short_opt = 0;
-    (*opt)->long_opt = NULL;
-    (*opt)->description = (char*)description;
-    (*opt)->value = NULL;
-    (*opt)->arr_elem_size = 0;
-    (*opt)->active = true;
-    (*opt)->type = type;
-    (*opt)->next = NULL;
-    (*opt)->prev = NULL;
+    opt_list->main->short_opt = 0;
+    opt_list->main->long_opt = NULL;
+    opt_list->main->description = (char*)description;
+    opt_list->main->value = NULL;
+    opt_list->main->arr_elem_size = 0;
+    opt_list->main->active = true;
+    opt_list->main->type = type;
+    opt_list->main->next = NULL;
+    opt_list->main->prev = NULL;
     return (OPT_SUCCESS);
 }
 
@@ -164,10 +162,8 @@ int opt_set_main(t_opt **opt, const enum opt_types type, const char description[
  * 
  * you need to put character \'-\' before the short option or the long option
  */
-int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types type, const char *description, size_t option, t_opt *opt)
+int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types type, const char *description, size_t option, t_opt_list opt_list)
 {
-    if (opt == NULL)
-        return (OPT_ERROR);
     t_opt *tmp = opt;
     t_opt *new_opt = malloc(sizeof(t_opt));
     if (new_opt == NULL)
