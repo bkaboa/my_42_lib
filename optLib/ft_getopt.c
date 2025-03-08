@@ -40,34 +40,6 @@ void opt_destroy(t_opt **opt)
     *opt = NULL;
 }
 
-static void sanitize(t_opt *opt)
-{
-    t_opt *tmp = NULL;
-    t_opt *tmp2 = NULL;
-
-    while (opt->next != NULL)
-    {
-        tmp = opt->next;
-        if (tmp->active == false)
-        {
-            if (tmp->type & OPT_ARRAY)
-            {
-                if (tmp->value != NULL)
-                    free(tmp->value);
-                tmp->value = NULL;
-            }
-            opt->next = tmp->next;
-            if (tmp->next != NULL) {
-                tmp2 = tmp->next;
-                tmp2->prev = opt;
-            }
-            free(tmp);
-        }
-        else
-            opt = opt->next;
-    }
-}
-
 static int getOptError(t_opt *opt, char *msg)
 {
     dprintf(STDERR_FILENO, "Error: %s\n", msg);
@@ -88,8 +60,6 @@ void debug_opt(t_opt *opt)
         dprintf(STDERR_FILENO, "description: %s\n", opt->description);
         dprintf(STDERR_FILENO, "type: %d\n", opt->type);
         dprintf(STDERR_FILENO, "arr_elem_size: %ld\n", opt->arr_elem_size);
-        dprintf(STDERR_FILENO, "option: %ld\n", opt->option);
-        dprintf(STDERR_FILENO, "active: %d\n", opt->active);
         if (opt->value == NULL)
             dprintf(STDERR_FILENO, "value: NULL\n");
         else {
@@ -120,14 +90,14 @@ void debug_opt(t_opt *opt)
 }
 
 /**
- * @brief 
- * 
- * @param opt 
- * @param type 
- * @param description 
+ * @brief
+ *
+ * @param opt
+ * @param type
+ * @param description
  * @return OPT_SUCCESS if the main option is set successfully //
  * @return OPT_ERROR if an error occured
- * 
+ *
  * set the main option of the list can be an array or a single value
  */
 int opt_set_main(t_opt_list *opt_list, const enum opt_types type, const char description[])
@@ -139,8 +109,8 @@ int opt_set_main(t_opt_list *opt_list, const enum opt_types type, const char des
     opt_list->main->long_opt = NULL;
     opt_list->main->description = (char*)description;
     opt_list->main->value = NULL;
+    opt_list->main->func = NULL;
     opt_list->main->arr_elem_size = 0;
-    opt_list->main->active = true;
     opt_list->main->type = type;
     opt_list->main->next = NULL;
     opt_list->main->prev = NULL;
@@ -148,47 +118,58 @@ int opt_set_main(t_opt_list *opt_list, const enum opt_types type, const char des
 }
 
 /**
- * @brief 
- * 
- * @param short_opt 
- * @param long_opt 
- * @param type 
- * @param description 
- * @param opt 
+ * @brief
+ *
+ * @param short_opt
+ * @param long_opt
+ * @param type
+ * @param description
+ * @param opt
  * @return OPT_SUCCESS if the option is added successfully //
  * @return OPT_ERROR if an error occured
- * 
+ *
  * add a new option to the list
- * 
+ *
  * you need to put character \'-\' before the short option or the long option
  */
-int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types type, const char *description, size_t option, void (*func)(void*), t_opt_list opt_list)
+int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types type, const char *description, void *(*func)(void*), t_opt_list opt_list)
 {
-    t_opt *tmp = opt_list.head;
+    t_opt *tmp = opt_list.tail;
     t_opt *new_opt = malloc(sizeof(t_opt));
     if (new_opt == NULL)
         return (OPT_ERROR);
     new_opt->short_opt = (char)short_opt;
     new_opt->long_opt = (char*)long_opt;
     new_opt->description = (char*)description;
+    if (type & OPT_ARRAY) {
+        dprintf(STDERR_FILENO, "Error: array type is not supported for options\n");
+        return (OPT_ERROR);
+    }
     new_opt->type = type;
+    new_opt->func = func;
     new_opt->arr_elem_size = 0;
     new_opt->value = NULL;
     new_opt->next = NULL;
-    new_opt->option = option;
+    new_opt->prev = NULL;
     if (opt_list.head == NULL)
     {
         opt_list.head = new_opt;
+        opt_list.tail = new_opt;
+    }
+    else
+    {
+        tmp->next = new_opt;
+        new_opt->prev = tmp;
         opt_list.tail = new_opt;
     }
     return (OPT_SUCCESS);
 }
 
 /**
- * @brief 
- * 
- * @param opt 
- * 
+ * @brief
+ *
+ * @param opt
+ *
  * print the help of the options
  */
 void opt_print_help(const t_opt *opt)
@@ -271,14 +252,14 @@ static int take_arg(const char *arg, t_opt *opt)
 }
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  * @param argv
- * @param argc 
- * @param opt 
+ * @param argc
+ * @param opt
  * @return OPT_SUCCESS if the options are taken successfully //
  * @return OPT_ERROR if an error occured
- * 
+ *
  * take the options from the command line
  * be aware the options list is sanitized after the call (remove the unused options)
  */
@@ -304,7 +285,6 @@ int ft_getopt(const char **argv, const int argc, t_opt *opt)
             while (opt != NULL && argv[i][j] != '\0') {
                 if (is_long_opt == true) {
                     if (ft_strcmp(opt->long_opt, &(argv[i][2])) == 0) {
-                        opt->active = true;
                         if (opt->type != OPT_NONE) {
                             i += 1;
                             if (take_arg(argv[i], opt) == OPT_ERROR) {
@@ -316,7 +296,6 @@ int ft_getopt(const char **argv, const int argc, t_opt *opt)
                 }
                 else {
                     if (opt->short_opt == argv[i][j]) {
-                        opt->active = true;
                         if (opt->type != OPT_NONE) {
                             i += 1;
                             if (take_arg(argv[i], opt) == OPT_ERROR) {
