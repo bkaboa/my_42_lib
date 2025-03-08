@@ -20,8 +20,7 @@ typedef struct {
     char *description;
     u_int8_t type;
     size_t arr_elem_size;
-    size_t option;
-    bool active;
+    void (*func)(void*);
     void *value;
     void *next;
     void *prev;

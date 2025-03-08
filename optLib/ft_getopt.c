@@ -162,9 +162,9 @@ int opt_set_main(t_opt_list *opt_list, const enum opt_types type, const char des
  * 
  * you need to put character \'-\' before the short option or the long option
  */
-int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types type, const char *description, size_t option, t_opt_list opt_list)
+int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types type, const char *description, size_t option, void (*func)(void*), t_opt_list opt_list)
 {
-    t_opt *tmp = opt;
+    t_opt *tmp = opt_list.head;
     t_opt *new_opt = malloc(sizeof(t_opt));
     if (new_opt == NULL)
         return (OPT_ERROR);
@@ -176,10 +176,11 @@ int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types
     new_opt->value = NULL;
     new_opt->next = NULL;
     new_opt->option = option;
-    while (opt->next != NULL)
-        opt = opt->next;
-    opt->next = new_opt;
-    new_opt->prev = opt;
+    if (opt_list.head == NULL)
+    {
+        opt_list.head = new_opt;
+        opt_list.tail = new_opt;
+    }
     return (OPT_SUCCESS);
 }
 
