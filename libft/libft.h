@@ -49,6 +49,9 @@ char *ft_strjoin(const char *str1, const char *str2);
 // ft_strlen.c
 size_t ft_strlen(const char *str);
 
+// ft_strchr.c
+char *ft_strchr(const char *s, int c);
+
 /* -------------------------------- */
 
 // CONVERSION FUNCTIONS

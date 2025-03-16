@@ -1,93 +1,48 @@
 #include "optlib.h"
 
-static void freeArray(t_opt *opt)
+void opt_destroy(t_opt_list opt_lists)
 {
-    while (opt != NULL) {
-        if (opt->type & OPT_ARRAY)
-        {
-            if (opt->value != NULL)
-                free(opt->value);
-            opt->value = NULL;
-        }
-        opt = opt->next;
-    }
-}
-
-static void free_opt(t_opt *opt)
-{
-    while (opt->next != NULL)
-    {
-        opt = opt->next;
-        free(opt->prev);
-    }
-    free(opt);
-}
-
-void opt_destroy(t_opt **opt)
-{
+    t_opt *opt = opt_lists.head;
     t_opt *tmp;
-    while(*opt != NULL)
+    while(opt != NULL)
     {
-        tmp = *opt;
-        *opt = (*opt)->next;
-        if (tmp->type & OPT_ARRAY)
-        {
-            if (tmp->value != NULL)
-                free(tmp->value);
-        }
+        tmp = opt;
+        opt = opt->next;
+        if (tmp->value != NULL)
+            free(tmp->value);
         free(tmp);
     }
-    *opt = NULL;
+    if (opt_lists.main.value != NULL)
+        free(opt_lists.main.value);
+    opt_lists.head = NULL;
+    opt_lists.tail = NULL;
 }
 
-static int getOptError(t_opt *opt, char *msg)
+static int getOptError(t_opt_list opt_lists, char *msg)
 {
     dprintf(STDERR_FILENO, "Error: %s\n", msg);
-    opt_print_help(opt);
-    opt_destroy(&opt);
+    opt_print_help(opt_lists);
+    opt_destroy(opt_lists);
     return (OPT_ERROR);
 }
 
-void debug_opt(t_opt *opt)
-{
-    while (opt != NULL)
-    {
-        dprintf(STDERR_FILENO, "opt address: %p\n", opt);
-        dprintf(STDERR_FILENO, "next address: %p\n", opt->next);
-        dprintf(STDERR_FILENO, "prev address: %p\n", opt->prev);
-        dprintf(STDERR_FILENO, "short_opt: %c\n", opt->short_opt);
-        dprintf(STDERR_FILENO, "long_opt: %s\n", opt->long_opt);
-        dprintf(STDERR_FILENO, "description: %s\n", opt->description);
-        dprintf(STDERR_FILENO, "type: %d\n", opt->type);
-        dprintf(STDERR_FILENO, "arr_elem_size: %ld\n", opt->arr_elem_size);
-        if (opt->value == NULL)
-            dprintf(STDERR_FILENO, "value: NULL\n");
-        else {
-            if (opt->type & OPT_ARRAY)
-            {
-                if (opt->type & OPT_LONG)
-                {
-                    for (int i = 0; i < opt->arr_elem_size; i++)
-                        dprintf(STDERR_FILENO, "value[%d]: %ld\n", i, ((int64_t*)opt->value)[i]);
-                }
-                else if (opt->type & OPT_STRING)
-                {
-                    for (int i = 0; i < opt->arr_elem_size; i++)
-                        dprintf(STDERR_FILENO, "value[%d]: %s\n", i, ((char**)opt->value)[i]);
-                }
-            }
-            else
-            {
-                if (opt->type & OPT_LONG)
-                    dprintf(STDERR_FILENO, "value: %ld\n", (int64_t)opt->value);
-                else if (opt->type & OPT_STRING)
-                    dprintf(STDERR_FILENO, "value: %s\n", ((char*)opt->value));
-            }
-        }
-        dprintf(STDERR_FILENO, "\n-----------------------------------------------------------------------------\n");
-        opt = opt->next;
-    }
-}
+// void debug_opt_list(t_opt_list opt_lists)
+// {
+//     while (opt != NULL)
+//     {
+//         dprintf(STDERR_FILENO, "opt address: %p\n", opt);
+//         dprintf(STDERR_FILENO, "next address: %p\n", opt->next);
+//         dprintf(STDERR_FILENO, "prev address: %p\n", opt->prev);
+//         dprintf(STDERR_FILENO, "short_opt: %c\n", opt->short_opt);
+//         dprintf(STDERR_FILENO, "long_opt: %s\n", opt->long_opt);
+//         dprintf(STDERR_FILENO, "description: %s\n", opt->description);
+//         dprintf(STDERR_FILENO, "arr_elem_size: %ld\n", opt->arr_elem_size);
+//         if (opt->value == NULL)
+//             dprintf(STDERR_FILENO, "value: NULL\n");
+//         dprintf(STDERR_FILENO, "\n-----------------------------------------------------------------------------\n");
+//         opt = opt->next;
+//     }
+// }
 
 /**
  * @brief
@@ -100,20 +55,16 @@ void debug_opt(t_opt *opt)
  *
  * set the main option of the list can be an array or a single value
  */
-int opt_set_main(t_opt_list *opt_list, const enum opt_types type, const char description[])
+int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(void*))
 {
-    opt_list->main = malloc(sizeof(t_opt));
-    if (opt_list->main == NULL)
-        return (OPT_ERROR);
-    opt_list->main->short_opt = 0;
-    opt_list->main->long_opt = NULL;
-    opt_list->main->description = (char*)description;
-    opt_list->main->value = NULL;
-    opt_list->main->func = NULL;
-    opt_list->main->arr_elem_size = 0;
-    opt_list->main->type = type;
-    opt_list->main->next = NULL;
-    opt_list->main->prev = NULL;
+    opt_list->main.short_opt = 0;
+    opt_list->main.long_opt = NULL;
+    opt_list->main.description = (char*)description;
+    opt_list->main.value = NULL;
+    opt_list->main.func = func;
+    opt_list->main.arr_elem_size = 0;
+    opt_list->main.next = NULL;
+    opt_list->main.prev = NULL;
     return (OPT_SUCCESS);
 }
 
@@ -132,7 +83,7 @@ int opt_set_main(t_opt_list *opt_list, const enum opt_types type, const char des
  *
  * you need to put character \'-\' before the short option or the long option
  */
-int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types type, const char *description, void *(*func)(void*), t_opt_list opt_list)
+int opt_add_new(const char short_opt, const char *long_opt, const char *description, const bool required, void *(*func)(void*), const bool argument, t_opt_list opt_list)
 {
     t_opt *tmp = opt_list.tail;
     t_opt *new_opt = malloc(sizeof(t_opt));
@@ -141,11 +92,8 @@ int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types
     new_opt->short_opt = (char)short_opt;
     new_opt->long_opt = (char*)long_opt;
     new_opt->description = (char*)description;
-    if (type & OPT_ARRAY) {
-        dprintf(STDERR_FILENO, "Error: array type is not supported for options\n");
-        return (OPT_ERROR);
-    }
-    new_opt->type = type;
+    new_opt->required = required;
+    new_opt->argument = argument;
     new_opt->func = func;
     new_opt->arr_elem_size = 0;
     new_opt->value = NULL;
@@ -172,8 +120,14 @@ int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types
  *
  * print the help of the options
  */
-void opt_print_help(const t_opt *opt)
+void opt_print_help(const t_opt_list opt_lists)
 {
+    t_opt *opt = opt_lists.head;
+
+    dprintf(STDERR_FILENO, "%s\n", opt_lists.main.description);
+    dprintf(STDERR_FILENO, "Options:\n");
+    dprintf(STDERR_FILENO, "Usage: ./program [options]\n");
+    dprintf(STDERR_FILENO, "-h, --help     Print this help\n");
     while (opt != NULL)
     {
         if (opt->short_opt != 0)
@@ -185,70 +139,33 @@ void opt_print_help(const t_opt *opt)
     }
 }
 
-static int take_array(const char *arg, t_opt *opt)
+static int process_long_option(t_opt_list opt_lists, t_opt *opt, const char *arg, const int argc, int *i)
 {
-    void *tmp = opt->value;
-    opt->arr_elem_size += 1;
-    if (opt->type & OPT_LONG)
+    if (opt->argument)
     {
-        if (ft_isnumber(arg) == 0) {
-            dprintf(STDERR_FILENO, "Error: arg takes number\n", arg);
-            return (OPT_ERROR);
-        }
-        opt->value = malloc(sizeof(int64_t) * opt->arr_elem_size);
-        if (opt->value == NULL)
-            return (OPT_ERROR);
-        for (int i = 0; i < opt->arr_elem_size; i++)
+        const char *arg_value = (arg[0] == '=') ? arg + 1 : arg;
+        if (arg[0] == '\0')
         {
-            if (i == opt->arr_elem_size - 1)
-                ((int64_t*)opt->value)[i] = ft_atol(arg);
-            else
-                ((int64_t*)opt->value)[i] = ((int64_t*)tmp)[i];
+            if (*i + 1 >= argc)
+            {
+                return getOptError(opt_lists, "Missing argument");
+            }
+            arg_value = arg + 1;
+            (*i)++;
         }
-    }
-    else if (opt->type & OPT_STRING)
-    {
-        opt->value = malloc(sizeof(char*) * opt->arr_elem_size);
-        if (opt->value == NULL)
-            return (OPT_ERROR);
-        for (int i = 0; i < opt->arr_elem_size; i++)
+        if (call_func(opt_lists, opt, arg_value) == OPT_ERROR)
         {
-            if (i == opt->arr_elem_size - 1)
-                ((char**)opt->value)[i] = (char*)arg;
-            else
-                ((char**)opt->value)[i] = ((char**)tmp)[i];
+            return OPT_ERROR;
         }
-    }
-    return (OPT_SUCCESS);
-}
-
-static int take_arg(const char *arg, t_opt *opt)
-{
-    if (opt->type & OPT_ARRAY)
-    {
-        if (take_array(arg, opt) == OPT_ERROR) {
-            return (OPT_ERROR);
-        }
-    }
-    else if (opt->type == OPT_STRING)
-    {
-        char *str = (char*)arg;
-        opt->value = str;
-    }
-    else if (opt->type == OPT_LONG)
-    {
-        if (ft_isnumber(arg) == 0) {
-            dprintf(STDERR_FILENO, "Error: arg takes number\n", arg);
-            return (OPT_ERROR);
-        }
-        long num = ft_atol(arg);
-        opt->value = (void*)num;
     }
     else
     {
-        return (OPT_ERROR);
+        if (call_func(opt_lists, opt, NULL) == OPT_ERROR)
+        {
+            return OPT_ERROR;
+        }
     }
-    return (OPT_SUCCESS);
+    return OPT_SUCCESS;
 }
 
 /**
@@ -263,67 +180,86 @@ static int take_arg(const char *arg, t_opt *opt)
  * take the options from the command line
  * be aware the options list is sanitized after the call (remove the unused options)
  */
-int ft_getopt(const char **argv, const int argc, t_opt *opt)
-{
-    if (argv == NULL || opt == NULL)
+int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
+    if (argv == NULL || opt_lists.head == NULL)
         return (OPT_ERROR);
+
+    t_opt *opt = opt_lists.head;
     int i = 1;
-    int j = 0;
-    bool is_long_opt = false;
-    t_opt *tmp = opt;
-    while (i < argc)
-    {
-        opt = tmp;
+
+    while (i < argc) {
+        if (ft_strncmp(argv[i], "--help", 6) == 0 || ft_strncmp(argv[i], "-h", 2) == 0) {
+            opt_print_help(opt_lists);
+            opt_destroy(opt_lists);
+            return (OPT_HELP);
+        }
+
+        opt = opt_lists.head;
         if (argv[i][0] == '-')
         {
-            is_long_opt = false;
-            if (argv[i][1] == '\0')
-                return (getOptError(tmp, "Invalid option"));
-            if (argv[i][1] == '-')
-                is_long_opt = true;
-            j = 1;
-            while (opt != NULL && argv[i][j] != '\0') {
-                if (is_long_opt == true) {
-                    if (ft_strcmp(opt->long_opt, &(argv[i][2])) == 0) {
-                        if (opt->type != OPT_NONE) {
-                            i += 1;
-                            if (take_arg(argv[i], opt) == OPT_ERROR) {
-                                return (getOptError(tmp, "Invalid argument"));
-                            }
+            bool is_long_opt = (argv[i][1] == '-');
+            int j = is_long_opt ? 2 : 1;
+
+            while (opt != NULL && argv[i][j] != '\0')
+            {
+                if (is_long_opt)
+                {
+                    if (ft_strncmp(opt->long_opt, argv[i] + j, ft_strlen(opt->long_opt)) == 0)
+                    {
+                        int result = process_long_option(opt_lists, opt, argv[i] + j, argc, &i);
+                        if (result != OPT_SUCCESS)
+                        {
+                            return result;
                         }
                         break;
                     }
                 }
-                else {
-                    if (opt->short_opt == argv[i][j]) {
-                        if (opt->type != OPT_NONE) {
-                            i += 1;
-                            if (take_arg(argv[i], opt) == OPT_ERROR) {
-                                return (getOptError(tmp, "Invalid argument"));
+                else
+                {
+                    if (opt->short_opt == argv[i][j])
+                    {
+                        if (opt->argument)
+                        {
+                            const char *arg_value = (argv[i][j + 1] == '=') ? argv[i] + j + 2 : argv[i] + j + 1;
+                            if (argv[i][j + 1] == '\0')
+                            {
+                                if (i + 1 >= argc)
+                                {
+                                    return getOptError(opt_lists, "Missing argument");
+                                }
+                                arg_value = argv[i + 1];
+                                i++;
+                            }
+                            if (call_func(opt_lists, opt, arg_value) == OPT_ERROR)
+                            {
+                                return OPT_ERROR;
                             }
                             break;
                         }
-                        j += 1;
-                        opt = tmp;
+                        else
+                        {
+                            if (call_func(opt_lists, opt, NULL) == OPT_ERROR)
+                            {
+                                return OPT_ERROR;
+                            }
+                            if (argv[i][j + 1] == '\0')
+                            {
+                                break;
+                            }
+                            j++;
+                            opt = opt_lists.head;
+                            continue;
+                        }
                     }
                 }
                 opt = opt->next;
-                if (opt == NULL) {
-                    return (getOptError(tmp, "Invalid option"));
-                }
             }
-            i += 1;
+            if (opt == NULL)
+            {
+                return getOptError(opt_lists, "Invalid option");
+            }
         }
-        else
-        {
-            if (opt->value != NULL && !(opt->type & OPT_ARRAY)) {
-                return (getOptError(tmp, "main argument already set"));
-            }
-            if (take_arg(argv[i], opt) == OPT_ERROR) {
-                return (getOptError(tmp, "Invalid argument"));
-            }
-            i += 1;
-        }
+        i++;
     }
-    return (OPT_SUCCESS);
+    return OPT_SUCCESS;
 }

@@ -6,22 +6,19 @@
 
 #define OPT_ERROR 1
 #define OPT_SUCCESS 0
-
-enum opt_types {
-    OPT_NONE = 0x0,
-    OPT_STRING = 0x1,
-    OPT_LONG = 0x2,
-    OPT_ARRAY = 0x4,
-};
+#define OPT_HELP 2
 
 typedef struct {
     char short_opt;
     char *long_opt;
     char *description;
-    u_int8_t type;
     size_t arr_elem_size;
-    void *(*func)(void*);
+    void *(*func)(const char *arg);
+    bool argument;
+    bool required;
+    bool is_set;
     void *value;
+    size_t nb_value_elem;
     void *next;
     void *prev;
 }   t_opt;
@@ -29,12 +26,12 @@ typedef struct {
 typedef struct {
     t_opt *head;
     t_opt *tail;
-    t_opt *main;
+    t_opt main;
 }  t_opt_list;
 
-int opt_set_main(t_opt **opt, const enum opt_types type, const char *description);
+int opt_set_main(t_opt_list *opt_list, const char description[]);
 void opt_destroy(t_opt **opt);
-int opt_add_new(const char short_opt, const char *long_opt, const enum opt_types type, const char *description, void *(*func)(void*), t_opt_list opt_list)
+int opt_add_new(const char short_opt, const char *long_opt, const char *description, const bool required, void *(*func)(void*), const bool argument, t_opt_list opt_list);
 void opt_print_help(const t_opt *opt);
 
 void debug_opt(t_opt *opt);

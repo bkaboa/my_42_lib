@@ -2,13 +2,47 @@
     "version": 3,
     "configurePresets": [
         {
+            "name": "default",
+            "hidden": false,
+            "description": "Build the library",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "OPT_OPTION": "OFF",
+                "LOGGER_OPTION": "OFF"
+            }
+        },
+        {
+            "name": "all",
+            "hidden": false,
+            "description": "Build the library",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "OPT_OPTION": "ON",
+                "LOGGER_OPTION": "ON"
+            }
+        },
+        {
             "name": "optLib",
             "hidden": false,
             "description": "Build the library with cli manager",
             "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
-                "OPTLIB": "ON"
+                "OPT_OPTION": "ON",
+                "LOGGER_OPTION": "OFF"
+            }
+        },
+        {
+            "name": "logger",
+            "hidden": false,
+            "description": "Build the library with logger",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "LOGGER_OPTION": "ON",
+                "OPT_OPTION": "OFF"
             }
         }
     ]
