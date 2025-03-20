@@ -10,29 +10,13 @@ option(TEST "Build all tests." OFF)
 option(OPT_OPTION "Build the op library." OFF)
 option(LOGGER_OPTION "Build the logger library." OFF)
 
-set ( LIBFT_FILES
-    libft/ft_atoi.c
-    libft/ft_is.c
-    libft/ft_memcmp.c
-    libft/ft_memcpy.c
-    libft/ft_memset.c
-    libft/ft_putchar.c
-    libft/ft_putstr.c
-    libft/ft_realloc.c
-    libft/ft_strcat.c
-    libft/ft_strcmp.c
-    libft/ft_strdup.c
-    libft/ft_strjoin.c
-    libft/ft_strlen.c
-    libft/ft_swap.c
-    libft/ft_to.c
-)
+file(GLOB LIBFT_SRCS libft/*.c)
 
-set( LIBROPT_FILES
+set(LIBROPT_SRCS
     optLib/ft_getopt.c
 )
 
-set( LOGGER_FILES
+set(LOGGER_SRCS
     logger/ft_logger.c
 )
 
@@ -43,16 +27,23 @@ project(
     LANGUAGES C
 )
 
+set(CMAKE_C_FLAGS "-Wall -Wextra -Werror")
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/lib)
 
-add_library(LIBFT STATIC ${LIBFT_FILES})
+add_custom_target(
+    create_dir ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
+)
+
+add_library(LIBFT STATIC ${LIBFT_SRCS})
 set_target_properties(LIBFT
     PROPERTIES
         OUTPUT_NAME ${LIBFT_NAME}
 )
 
 if (OPT_OPTION)
-    add_library(LIBOPT STATIC ${LIBROPT_FILES})
+    add_library(LIBOPT STATIC ${LIBROPT_SRCS})
     set_target_properties(LIBOPT
     PROPERTIES
         OUTPUT_NAME ${LIBOPT_NAME}
@@ -61,7 +52,7 @@ if (OPT_OPTION)
 endif()
 
 if (LOGGER_OPTION)
-    add_library(LIB_LOGGER STATIC ${LOGGER_FILES})
+    add_library(LIB_LOGGER STATIC ${LOGGER_SRCS})
     set_target_properties(LIB_LOGGER
     PROPERTIES 
         OUTPUT_NAME ${LIBLOGGER_NAME}

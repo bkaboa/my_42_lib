@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdarg.h>
+# include <stdbool.h>
 
 #include <sys/types.h>
 
@@ -21,7 +22,7 @@ typedef enum {
 
 # define LOG_STD(log_level) (log_level) == E_LOG_ERROR ? STDERR_FILENO : STDOUT_FILENO
 
-const static char *LOG_LEVELS_MSG[] = {
+static const char *LOG_LEVELS_MSG[] = {
     "INFO    : ",
     "WARNING : ",
     "ERROR   : ",
@@ -32,7 +33,9 @@ typedef struct {
     #ifdef FILE_LOG
         FILE *file;
     #endif
-    void (*log)(u_int8_t log_level, const char *msg, ...);
+    void (*log)(const u_int8_t log_level, const bool prefix, const char *msg, ...);
 } Logger;
+
+Logger *get_logger_instance();
 
 #endif

@@ -18,9 +18,15 @@ void opt_destroy(t_opt_list opt_lists)
     opt_lists.tail = NULL;
 }
 
-static int getOptError(t_opt_list opt_lists, char *msg)
+static int getOptError(t_opt_list opt_lists, char *msg, const char *arg)
 {
-    dprintf(STDERR_FILENO, "Error: %s\n", msg);
+    if (msg)
+    {
+        if (arg != NULL)
+            dprintf(STDERR_FILENO, "%sError: %s: %s%s\n",COLOR_RED, msg, arg, COLOR_RESET);
+        else
+            dprintf(STDERR_FILENO, "%sError: %s%s\n", COLOR_RED, msg, COLOR_RESET);
+    }
     opt_print_help(opt_lists);
     opt_destroy(opt_lists);
     return (OPT_ERROR);
@@ -55,7 +61,7 @@ static int getOptError(t_opt_list opt_lists, char *msg)
  *
  * set the main option of the list can be an array or a single value
  */
-int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(void*))
+int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(const char *arg))
 {
     opt_list->main.short_opt = 0;
     opt_list->main.long_opt = NULL;
@@ -83,7 +89,7 @@ int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(v
  *
  * you need to put character \'-\' before the short option or the long option
  */
-int opt_add_new(const char short_opt, const char *long_opt, const char *description, const bool required, void *(*func)(void*), const bool argument, t_opt_list opt_list)
+int opt_add_new(const char short_opt, const char *long_opt, const char *description, const bool required, void *(*func)(const char *arg), const bool argument, t_opt_list opt_list)
 {
     t_opt *tmp = opt_list.tail;
     t_opt *new_opt = malloc(sizeof(t_opt));
@@ -136,33 +142,40 @@ void opt_print_help(const t_opt_list opt_lists)
             dprintf(STDERR_FILENO, "--%s,  ", opt->long_opt);
         dprintf(STDERR_FILENO, "%s\n", opt->description);
         opt = opt->next;
+        dprintf(STDERR_FILENO, "test\n");
     }
 }
 
-static int process_long_option(t_opt_list opt_lists, t_opt *opt, const char *arg, const int argc, int *i)
+static int call_func(t_opt_list opt_lists, t_opt *opt, const char *arg)
 {
+    if (opt->func == NULL)
+    {
+        return OPT_SUCCESS;
+    }
     if (opt->argument)
     {
-        const char *arg_value = (arg[0] == '=') ? arg + 1 : arg;
-        if (arg[0] == '\0')
+        if (opt->value != NULL)
         {
-            if (*i + 1 >= argc)
-            {
-                return getOptError(opt_lists, "Missing argument");
-            }
-            arg_value = arg + 1;
-            (*i)++;
+            free(opt->value);
+            opt->value = NULL;
         }
-        if (call_func(opt_lists, opt, arg_value) == OPT_ERROR)
+        opt->value = opt->func((void*)arg);
+        if (opt->value == NULL)
         {
-            return OPT_ERROR;
+            return getOptError(opt_lists, NULL, NULL);
         }
     }
     else
     {
-        if (call_func(opt_lists, opt, NULL) == OPT_ERROR)
+        if (opt->value != NULL)
         {
-            return OPT_ERROR;
+            free(opt->value);
+            opt->value = NULL;
+        }
+        opt->value = opt->func(NULL);
+        if (opt->value == NULL)
+        {
+            return getOptError(opt_lists, NULL, NULL);
         }
     }
     return OPT_SUCCESS;
@@ -181,19 +194,13 @@ static int process_long_option(t_opt_list opt_lists, t_opt *opt, const char *arg
  * be aware the options list is sanitized after the call (remove the unused options)
  */
 int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
-    if (argv == NULL || opt_lists.head == NULL)
+    if (argv == NULL)
         return (OPT_ERROR);
 
     t_opt *opt = opt_lists.head;
     int i = 1;
 
     while (i < argc) {
-        if (ft_strncmp(argv[i], "--help", 6) == 0 || ft_strncmp(argv[i], "-h", 2) == 0) {
-            opt_print_help(opt_lists);
-            opt_destroy(opt_lists);
-            return (OPT_HELP);
-        }
-
         opt = opt_lists.head;
         if (argv[i][0] == '-')
         {
@@ -204,18 +211,53 @@ int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
             {
                 if (is_long_opt)
                 {
+                    if (ft_strncmp(argv[i] + j, "help", 4) == 0)
+                    {
+                        opt_print_help(opt_lists);
+                        opt_destroy(opt_lists);
+                        return (OPT_HELP);
+                    }
                     if (ft_strncmp(opt->long_opt, argv[i] + j, ft_strlen(opt->long_opt)) == 0)
                     {
-                        int result = process_long_option(opt_lists, opt, argv[i] + j, argc, &i);
-                        if (result != OPT_SUCCESS)
+                        if (opt->argument)
                         {
-                            return result;
+                            const char *arg_value = ft_strchr(argv[i] + j, '=');
+                            if (arg_value == NULL)
+                            {
+                                if (i + 1 >= argc)
+                                {
+                                    return getOptError(opt_lists, "Missing argument", NULL);
+                                }
+                                arg_value = (char*)argv[i + 1];
+                                i++;
+                            }
+                            else
+                            {
+                                arg_value++;
+                            }
+                            if (call_func(opt_lists, opt, arg_value) == OPT_ERROR)
+                            {
+                                return OPT_ERROR;
+                            }
+                        }
+                        else
+                        {
+                            if (call_func(opt_lists, opt, NULL) == OPT_ERROR)
+                            {
+                                return OPT_ERROR;
+                            }
                         }
                         break;
                     }
                 }
                 else
                 {
+                    if (argv[i][j] == 'h')
+                    {
+                        opt_print_help(opt_lists);
+                        opt_destroy(opt_lists);
+                        return (OPT_HELP);
+                    }
                     if (opt->short_opt == argv[i][j])
                     {
                         if (opt->argument)
@@ -225,7 +267,7 @@ int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
                             {
                                 if (i + 1 >= argc)
                                 {
-                                    return getOptError(opt_lists, "Missing argument");
+                                    return getOptError(opt_lists, "Missing argument", NULL);
                                 }
                                 arg_value = argv[i + 1];
                                 i++;
@@ -256,7 +298,14 @@ int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
             }
             if (opt == NULL)
             {
-                return getOptError(opt_lists, "Invalid option");
+                return getOptError(opt_lists, "Invalid option", argv[i]);
+            }
+        }
+        else
+        {
+            if ((long)opt_lists.main.func(argv[i]) == OPT_ERROR)
+            {
+                return getOptError(opt_lists, NULL, NULL);
             }
         }
         i++;

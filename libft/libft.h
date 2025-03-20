@@ -13,18 +13,18 @@
 bool    ft_isnumber(const char *str);
 bool    ft_isdecimal(const char *str);
 bool    ft_ishex(const char *str);
-bool    ft_isdigit(const char c);
-bool    ft_isalpha(const char c);
-bool    ft_isalnum(const char c);
-bool    ft_isascii(const char c);
-bool    ft_isprint(const char c);
-bool    ft_isspace(const char c);
-bool    ft_islower(const char c);
-bool    ft_isupper(const char c);
-bool    ft_isblank(const char c);
-bool    ft_iscntrl(const char c);
-bool    ft_isgraph(const char c);
-bool    ft_ispunct(const char c);
+bool    ft_isdigit(const int c);
+bool    ft_isalpha(const int c);
+bool    ft_isalnum(const int c);
+bool    ft_isascii(const int c);
+bool    ft_isprint(const int c);
+bool    ft_isspace(const int c);
+bool    ft_islower(const int c);
+bool    ft_isupper(const int c);
+bool    ft_isblank(const int c);
+bool    ft_iscntrl(const int c);
+bool    ft_isgraph(const int c);
+bool    ft_ispunct(const int c);
 
 /* -------------------------------- */
 

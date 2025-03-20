@@ -72,62 +72,62 @@ bool ft_ishex(const char *str)
     return (true);
 }
 
-bool ft_isdigit(const char c)
+bool ft_isdigit(const int c)
 {
     return (c >= '0' && c <= '9');
 }
 
-bool ft_isalpha(const char c)
+bool ft_isalpha(const int c)
 {
     return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
 }
 
-bool ft_isalnum(const char c)
+bool ft_isalnum(const int c)
 {
     return (ft_isdigit(c) || ft_isalpha(c));
 }
 
-bool ft_isascii(const char c)
+bool ft_isascii(const int c)
 {
     return (c >= 0 && c <= 127);
 }
 
-bool ft_isprint(const char c)
+bool ft_isprint(const int c)
 {
     return (c >= 32 && c <= 126);
 }
 
-bool ft_isspace(const char c)
+bool ft_isspace(const int c)
 {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r');
 }
 
-bool ft_islower(const char c)
+bool ft_islower(const int c)
 {
     return (c >= 'a' && c <= 'z');
 }
 
-bool ft_isupper(const char c)
+bool ft_isupper(const int c)
 {
     return (c >= 'A' && c <= 'Z');
 }
 
-bool ft_isblank(const char c)
+bool ft_isblank(const int c)
 {
     return (c == ' ' || c == '\t');
 }
 
-bool ft_iscntrl(const char c)
+bool ft_iscntrl(const int c)
 {
     return (c >= 0 && c <= 31);
 }
 
-bool ft_isgraph(const char c)
+bool ft_isgraph(const int c)
 {
     return (c >= 33 && c <= 126);
 }
 
-bool ft_ispunct(const char c)
+bool ft_ispunct(const int c)
 {
     return ((c >= 33 && c <= 47) || (c >= 58 && c <= 64) || (c >= 91 && c <= 96) || (c >= 123 && c <= 126));
 }

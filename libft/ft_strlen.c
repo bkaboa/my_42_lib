@@ -3,7 +3,7 @@
 size_t ft_strlen(const char *str)
 {
     const u_int64_t *longword_ptr;
-    u_int64_t longword, himagic, lomagic;
+    u_int64_t longword;
 
     longword_ptr = (u_int64_t *)str;
 
