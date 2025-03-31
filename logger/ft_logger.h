@@ -22,12 +22,6 @@ typedef enum {
 
 # define LOG_STD(log_level) (log_level) == E_LOG_ERROR ? STDERR_FILENO : STDOUT_FILENO
 
-static const char *LOG_LEVELS_MSG[] = {
-    "INFO    : ",
-    "WARNING : ",
-    "ERROR   : ",
-    "DEBUG   : "
-};
 
 typedef struct {
     #ifdef FILE_LOG

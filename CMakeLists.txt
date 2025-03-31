@@ -54,7 +54,7 @@ endif()
 if (LOGGER_OPTION)
     add_library(LIB_LOGGER STATIC ${LOGGER_SRCS})
     set_target_properties(LIB_LOGGER
-    PROPERTIES 
-        OUTPUT_NAME ${LIBLOGGER_NAME}
+        PROPERTIES 
+            OUTPUT_NAME ${LIBLOGGER_NAME}
     )
 endif()

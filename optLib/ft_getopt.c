@@ -32,23 +32,44 @@ static int getOptError(t_opt_list opt_lists, char *msg, const char *arg)
     return (OPT_ERROR);
 }
 
-// void debug_opt_list(t_opt_list opt_lists)
-// {
-//     while (opt != NULL)
-//     {
-//         dprintf(STDERR_FILENO, "opt address: %p\n", opt);
-//         dprintf(STDERR_FILENO, "next address: %p\n", opt->next);
-//         dprintf(STDERR_FILENO, "prev address: %p\n", opt->prev);
-//         dprintf(STDERR_FILENO, "short_opt: %c\n", opt->short_opt);
-//         dprintf(STDERR_FILENO, "long_opt: %s\n", opt->long_opt);
-//         dprintf(STDERR_FILENO, "description: %s\n", opt->description);
-//         dprintf(STDERR_FILENO, "arr_elem_size: %ld\n", opt->arr_elem_size);
-//         if (opt->value == NULL)
-//             dprintf(STDERR_FILENO, "value: NULL\n");
-//         dprintf(STDERR_FILENO, "\n-----------------------------------------------------------------------------\n");
-//         opt = opt->next;
-//     }
-// }
+void debug_opt(t_opt *opt)
+{
+    dprintf(STDERR_FILENO, "%sShort option: %c%s\n", COLOR_BLUE, opt->short_opt, COLOR_RESET);
+    dprintf(STDERR_FILENO, "%sLong option: %s%s\n", COLOR_BLUE, opt->long_opt, COLOR_RESET);
+    dprintf(STDERR_FILENO, "%sDescription: %s%s\n", COLOR_BLUE, opt->description, COLOR_RESET);
+    dprintf(STDERR_FILENO, "%sRequired: %s%s\n", COLOR_BLUE, opt->required ? "true" : "false", COLOR_RESET);
+    dprintf(STDERR_FILENO, "%sArgument: %s%s\n", COLOR_BLUE, opt->argument ? "true" : "false", COLOR_RESET);
+    dprintf(STDERR_FILENO, "%sFunction: %p%s\n", COLOR_BLUE, opt->func, COLOR_RESET);
+    if (opt->value != NULL)
+    {
+        dprintf(STDERR_FILENO, "%sValue: %p%s\n", COLOR_BLUE, opt->value, COLOR_RESET);
+        dprintf(STDERR_FILENO, "%sArray elem size: %zu%s\n", COLOR_BLUE, opt->arr_elem_size, COLOR_RESET);
+    }
+    dprintf(STDERR_FILENO, "%sNext: %p%s\n", COLOR_BLUE, opt->next, COLOR_RESET);
+    dprintf(STDERR_FILENO, "%sPrev: %p%s\n", COLOR_BLUE, opt->prev, COLOR_RESET);
+}
+
+void debug_opt_list(t_opt_list *opt_lists)
+{
+    dprintf(STDERR_FILENO, "%sMain option: %s%s\n", COLOR_BLUE, opt_lists->main.description, COLOR_RESET);
+    dprintf(STDERR_FILENO, "%sfunction: %p%s\n", COLOR_BLUE, opt_lists->main.func, COLOR_RESET);
+    if (opt_lists->head == NULL)
+    {
+        dprintf(STDERR_FILENO, "No options\n");
+        return;
+    }
+    else
+    {
+        t_opt *opt = opt_lists->head;
+        dprintf(STDERR_FILENO, "--------------------------------------------\n");
+        while (opt != NULL)
+        {
+            debug_opt(opt);
+            dprintf(STDERR_FILENO, "--------------------------------------------\n");
+            opt = opt->next;
+        }
+    }
+}
 
 /**
  * @brief
@@ -89,9 +110,9 @@ int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(c
  *
  * you need to put character \'-\' before the short option or the long option
  */
-int opt_add_new(const char short_opt, const char *long_opt, const char *description, const bool required, void *(*func)(const char *arg), const bool argument, t_opt_list opt_list)
+int opt_add_new(const char short_opt, const char *long_opt, const char *description, const bool required, void *(*func)(const char *arg), const bool argument, t_opt_list *opt_list)
 {
-    t_opt *tmp = opt_list.tail;
+    t_opt *tmp = opt_list->tail;
     t_opt *new_opt = malloc(sizeof(t_opt));
     if (new_opt == NULL)
         return (OPT_ERROR);
@@ -105,16 +126,16 @@ int opt_add_new(const char short_opt, const char *long_opt, const char *descript
     new_opt->value = NULL;
     new_opt->next = NULL;
     new_opt->prev = NULL;
-    if (opt_list.head == NULL)
+    if (opt_list->head == NULL)
     {
-        opt_list.head = new_opt;
-        opt_list.tail = new_opt;
+        opt_list->head = new_opt;
+        opt_list->tail = new_opt;
     }
     else
     {
         tmp->next = new_opt;
         new_opt->prev = tmp;
-        opt_list.tail = new_opt;
+        opt_list->tail = new_opt;
     }
     return (OPT_SUCCESS);
 }
@@ -132,8 +153,8 @@ void opt_print_help(const t_opt_list opt_lists)
 
     dprintf(STDERR_FILENO, "%s\n", opt_lists.main.description);
     dprintf(STDERR_FILENO, "Options:\n");
-    dprintf(STDERR_FILENO, "Usage: ./program [options]\n");
-    dprintf(STDERR_FILENO, "-h, --help     Print this help\n");
+    dprintf(STDERR_FILENO, "Usage: ./[program] [options]\n");
+    dprintf(STDERR_FILENO, "-h     --help,     Print this help\n");
     while (opt != NULL)
     {
         if (opt->short_opt != 0)
@@ -142,7 +163,6 @@ void opt_print_help(const t_opt_list opt_lists)
             dprintf(STDERR_FILENO, "--%s,  ", opt->long_opt);
         dprintf(STDERR_FILENO, "%s\n", opt->description);
         opt = opt->next;
-        dprintf(STDERR_FILENO, "test\n");
     }
 }
 
@@ -154,26 +174,14 @@ static int call_func(t_opt_list opt_lists, t_opt *opt, const char *arg)
     }
     if (opt->argument)
     {
-        if (opt->value != NULL)
-        {
-            free(opt->value);
-            opt->value = NULL;
-        }
-        opt->value = opt->func((void*)arg);
-        if (opt->value == NULL)
+        if ((long)opt->func((void*)arg) == OPT_ERROR)
         {
             return getOptError(opt_lists, NULL, NULL);
         }
     }
     else
     {
-        if (opt->value != NULL)
-        {
-            free(opt->value);
-            opt->value = NULL;
-        }
-        opt->value = opt->func(NULL);
-        if (opt->value == NULL)
+        if ((long)opt->func(NULL) == OPT_ERROR)
         {
             return getOptError(opt_lists, NULL, NULL);
         }
@@ -215,9 +223,9 @@ int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
                     {
                         opt_print_help(opt_lists);
                         opt_destroy(opt_lists);
-                        return (OPT_HELP);
+                        return (OPT_ERROR);
                     }
-                    if (ft_strncmp(opt->long_opt, argv[i] + j, ft_strlen(opt->long_opt)) == 0)
+                    if (ft_strncmp(opt->long_opt, argv[i] + j, ft_strlen(opt->long_opt)) == 0 && opt->long_opt != NULL)
                     {
                         if (opt->argument)
                         {
@@ -226,7 +234,7 @@ int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
                             {
                                 if (i + 1 >= argc)
                                 {
-                                    return getOptError(opt_lists, "Missing argument", NULL);
+                                    return getOptError(opt_lists, "Missing argument", argv[i]);
                                 }
                                 arg_value = (char*)argv[i + 1];
                                 i++;
@@ -256,9 +264,9 @@ int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
                     {
                         opt_print_help(opt_lists);
                         opt_destroy(opt_lists);
-                        return (OPT_HELP);
+                        return (OPT_ERROR);
                     }
-                    if (opt->short_opt == argv[i][j])
+                    if (opt->short_opt == argv[i][j] && opt->short_opt != 0)
                     {
                         if (opt->argument)
                         {
@@ -267,7 +275,7 @@ int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
                             {
                                 if (i + 1 >= argc)
                                 {
-                                    return getOptError(opt_lists, "Missing argument", NULL);
+                                    return getOptError(opt_lists, "Missing argument", argv[i]);
                                 }
                                 arg_value = argv[i + 1];
                                 i++;
