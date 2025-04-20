@@ -22,6 +22,10 @@ typedef enum {
 
 # define LOG_STD(log_level) (log_level) == E_LOG_ERROR ? STDERR_FILENO : STDOUT_FILENO
 
+/*
+ * this logger is used to log messages to the console and to a file
+ * if you want to log to a file, define FILE_LOG during compilation
+ */
 
 typedef struct {
     #ifdef FILE_LOG

@@ -34,6 +34,18 @@ Logger *get_logger_instance()
     return logger;
 }
 
+/** 
+ * @brief 
+ * 
+ * @param log_level 
+ * @param prefix 
+ * @param msg 
+ * @param ... 
+ * 
+ * log function buffer limit is 1024 bytes
+ * 
+ * the prefix is used to add the log level to the message (e.g INFO, WARNING, ERROR, DEBUG)
+ */
 static void logger_func(const u_int8_t log_level, const bool prefix, const char *msg, ...)
 {
     char format[1024] = {0};
