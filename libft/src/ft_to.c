@@ -50,22 +50,24 @@ int ft_tochar(int c)
     return (c & 0xFF);
 }
 
-size_t htonst(const size_t data) {
-    u_int8_t size = sizeof(size_t);
-    size_t result = 0;
-
-    for (u_int8_t i = 0; i < size; i++) {
-        result |= ((data >> (i * 8)) & 0xFF) << ((size - i - 1) * 8);
+#if defined(__linux__)
+    size_t htons(const size_t data) {
+        u_int8_t size = sizeof(size_t);
+        size_t result = 0;
+    
+        for (u_int8_t i = 0; i < size; i++) {
+            result |= ((data >> (i * 8)) & 0xFF) << ((size - i - 1) * 8);
+        }
+        return (result);
     }
-    return (result);
-}
-
-size_t ntohst(const size_t data) {
-    u_int8_t size = sizeof(size_t);
-    size_t result = 0;
-
-    for (u_int8_t i = 0; i < size; i++) {
-        result |= ((data >> (i * 8)) & 0xFF) << ((size - i - 1) * 8);
+    
+    size_t ntohs(const size_t data) {
+        u_int8_t size = sizeof(size_t);
+        size_t result = 0;
+    
+        for (u_int8_t i = 0; i < size; i++) {
+            result |= ((data >> (i * 8)) & 0xFF) << ((size - i - 1) * 8);
+        }
+        return (result);
     }
-    return (result);
-}
+#endif

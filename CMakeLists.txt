@@ -10,7 +10,9 @@ option(TEST "Build all tests." OFF)
 option(OPT_OPTION "Build the op library." OFF)
 option(LOGGER_OPTION "Build the logger library." OFF)
 
-file(GLOB LIBFT_SRCS libft/*.c)
+file(GLOB_RECURSE LIBFT_SRCS
+    libft/*.c
+)
 
 set(LIBROPT_SRCS
     optLib/ft_getopt.c
@@ -37,9 +39,15 @@ add_custom_target(
 )
 
 add_library(LIBFT STATIC ${LIBFT_SRCS})
+
 set_target_properties(LIBFT
     PROPERTIES
         OUTPUT_NAME ${LIBFT_NAME}
+)
+
+target_include_directories(LIBFT
+    PUBLIC
+        libft
 )
 
 if (OPT_OPTION)
