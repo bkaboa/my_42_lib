@@ -114,9 +114,9 @@ char *ft_itoa(int n);
 // NETWORK FUNCTIONS
 
 // ntoh.c
-u_int64_t ntohst(const u_int64_t data);
+size_t my_ntohs(const size_t data);
 
 // hton.c
-u_int64_t htonst(const u_int64_t data);
+size_t my_htons(const size_t data);
 
 #endif
