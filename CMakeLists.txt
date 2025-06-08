@@ -29,7 +29,7 @@ project(
     LANGUAGES C
 )
 
-set(CMAKE_C_FLAGS "-Wall -Wextra -Werror")
+set(CMAKE_C_FLAGS "-Wall -Wextra")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/lib)
 
@@ -39,15 +39,13 @@ add_custom_target(
 )
 
 add_library(LIBFT STATIC ${LIBFT_SRCS})
-
 set_target_properties(LIBFT
     PROPERTIES
         OUTPUT_NAME ${LIBFT_NAME}
 )
-
 target_include_directories(LIBFT
     PUBLIC
-        libft
+        ${CMAKE_CURRENT_LIST_DIR}/libft
 )
 
 if (OPT_OPTION)
@@ -56,7 +54,10 @@ if (OPT_OPTION)
     PROPERTIES
         OUTPUT_NAME ${LIBOPT_NAME}
     )
-    add_dependencies(LIBOPT LIBFT)
+    target_include_directories(LIBOPT
+        PRIVATE
+            ${CMAKE_CURRENT_LIST_DIR}/libft
+    )
 endif()
 
 if (LOGGER_OPTION)
@@ -64,5 +65,13 @@ if (LOGGER_OPTION)
     set_target_properties(LIB_LOGGER
         PROPERTIES 
             OUTPUT_NAME ${LIBLOGGER_NAME}
+    )
+    target_compile_definitions(LIB_LOGGER
+        PRIVATE
+            WRITE_LOG
+    )
+    target_include_directories(LIB_LOGGER
+        PRIVATE
+            ${CMAKE_CURRENT_LIST_DIR}/libft
     )
 endif()

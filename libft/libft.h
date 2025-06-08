@@ -2,10 +2,11 @@
 # define LIBFT_H
 
 #include <sys/types.h>
-#include <arpa/inet.h>
 #include <unistd.h>
 #include <stdlib.h>
+
 #include <stdio.h>
+
 #include <stdbool.h>
 
 // ft_is.c
@@ -107,16 +108,16 @@ void    ft_putstr(const char *str);
 int ft_atoi(const char *str);
 long ft_atol(const char *str);
 int ft_atoi_base(const char *str, int base);
-char *ft_itoa(int n);
+char *ft_itoa(const long n);
 
 /* -------------------------------- */
 
 // NETWORK FUNCTIONS
 
 // ntoh.c
-size_t my_ntohs(const size_t data);
+u_int64_t ntohst(const u_int64_t data);
 
 // hton.c
-size_t my_htons(const size_t data);
+u_int64_t htonst(const u_int64_t data);
 
 #endif

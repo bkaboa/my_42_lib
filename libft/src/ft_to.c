@@ -50,7 +50,7 @@ int ft_tochar(int c)
     return (c & 0xFF);
 }
 
-size_t my_htons(const size_t data) {
+size_t htonst(const size_t data) {
     u_int8_t size = sizeof(size_t);
     size_t result = 0;
 
@@ -60,7 +60,7 @@ size_t my_htons(const size_t data) {
     return (result);
 }
 
-size_t my_ntohs(const size_t data) {
+size_t ntohst(const size_t data) {
     u_int8_t size = sizeof(size_t);
     size_t result = 0;
 
