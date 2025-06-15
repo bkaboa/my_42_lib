@@ -1,15 +1,17 @@
 #ifndef LOGGER_H
 # define LOGGER_H
 
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdarg.h>
+# include <stdio.h>
+# include <unistd.h>
+# include <stdlib.h>
+# include <stdarg.h>
 # include <stdbool.h>
 
-#include <sys/types.h>
+# include <sys/types.h>
 
-#include "ft_color.h"
+# include "ft_color.h"
+
+# include <fcntl.h>
 
 typedef enum {
     E_LOG_INFO,
@@ -28,9 +30,10 @@ typedef enum {
  */
 
 typedef struct {
-    #ifdef FILE_LOG
+    union u_logger {
         FILE *file;
-    #endif
+        int fd;
+    } u_logger;
     void (*log)(const u_int8_t log_level, const bool prefix, const char *msg, ...);
 } Logger;
 
