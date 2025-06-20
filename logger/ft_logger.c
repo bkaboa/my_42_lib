@@ -29,7 +29,7 @@ Logger *get_logger_instance()
         logger = (Logger *)malloc(sizeof(Logger));
         #ifdef FILE_LOG
             #ifdef WRITE_LOG
-                logger->u_logger.fd = open("log.txt", O_WRONLY | O_CREAT | O_APPEND, 0644);
+                logger->u_logger.fd = open("log.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
                 if (logger->u_logger.fd < 0)
                 {
                     perror("Failed to open log file");
@@ -103,7 +103,7 @@ void logger_destructor()
                     const char *str_arg = va_arg(args, const char *);
                     ft_strcat(format, str_arg);
                 }
-                else if (__format[i] == 'd' || __format[i] == 'i' || __format[i] == 'u' || __format[i] == 'l')
+                else if (__format[i] == 'd' || __format[i] == 'i' || __format[i] == 'u' || (__format[i] == 'l' && __format[i + 1] == 'd'))
                 {
                     int int_arg = va_arg(args, int);
                     char *str_arg = ft_itoa(int_arg);
@@ -128,7 +128,6 @@ void logger_destructor()
         write(LOG_STD(log_level), COLOR_MSG(log_level), ft_strlen(COLOR_MSG(log_level)));
         write(LOG_STD(log_level), format, ft_strlen(format));
         write(LOG_STD(log_level), COLOR_RESET, ft_strlen(COLOR_RESET));
-        dprintf(2, "fd file: %d\n", logger->u_logger.fd);
         #ifdef FILE_LOG
             write(logger->u_logger.fd, COLOR_MSG(log_level), ft_strlen(COLOR_MSG(log_level)));
             write(logger->u_logger.fd, format, ft_strlen(format));
@@ -145,7 +144,7 @@ void logger_destructor()
         vsnprintf(format, sizeof(format), __format, args);
         va_end(args);
         #ifdef FILE_LOG
-            fprintf(logger->file, "%s%s%s", LOG_LEVELS_MSG[log_level], format, COLOR_RESET);
+            fprintf(logger->u_logger.file, "%s%s%s", LOG_LEVELS_MSG[log_level], format, COLOR_RESET);
         #endif
         if (prefix)
             dprintf(LOG_STD(log_level), "%s%s%s%s", COLOR_MSG(log_level), LOG_LEVELS_MSG[log_level], format, COLOR_RESET);

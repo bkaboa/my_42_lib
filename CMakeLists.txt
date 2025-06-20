@@ -68,7 +68,7 @@ if (LOGGER_OPTION)
     )
     target_compile_definitions(LIB_LOGGER
         PRIVATE
-            WRITE_LOG
+            # WRITE_LOG
             FILE_LOG
     )
     target_include_directories(LIB_LOGGER
