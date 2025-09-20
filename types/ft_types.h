@@ -5,7 +5,7 @@
 #include <sys/types.h>
 
 typedef enum {
-    STATUS_OK = 0,
+    STATUS_SUCCESS = 0,
     STATUS_ERROR = 1,
     STATUS_NOT_FOUND = 2,
     STATUS_INVALID_ARGUMENT = 3,

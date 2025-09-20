@@ -9,6 +9,10 @@
 #define OPT_SUCCESS 0
 #define OPT_HELP 2
 
+# define POINTER_OPT_ERROR ((void *)OPT_ERROR)
+# define POINTER_OPT_SUCCESS ((void *)OPT_SUCCESS)
+# define POINTER_OPT_HELP ((void *)OPT_HELP)
+
 typedef struct {
     char short_opt;
     char *long_opt;
