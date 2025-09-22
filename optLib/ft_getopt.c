@@ -92,6 +92,7 @@ int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(c
     opt_list->main.arr_elem_size = 0;
     opt_list->main.next = NULL;
     opt_list->main.prev = NULL;
+    opt_list->main.is_set = false;
     return (OPT_SUCCESS);
 }
 
@@ -126,6 +127,7 @@ int opt_add_new(const char short_opt, const char *long_opt, const char *descript
     new_opt->value = NULL;
     new_opt->next = NULL;
     new_opt->prev = NULL;
+    new_opt->is_set = false;
     if (opt_list->head == NULL)
     {
         opt_list->head = new_opt;
@@ -137,6 +139,28 @@ int opt_add_new(const char short_opt, const char *long_opt, const char *descript
         new_opt->prev = tmp;
         opt_list->tail = new_opt;
     }
+    return (OPT_SUCCESS);
+}
+
+/// @brief this function is used to set the empty option argument like `./program file1 file2`
+/// @param opt_list 
+/// @param description 
+/// @param func 
+/// @return OPT_SUCCESS if the empty option is set successfully //
+/// @return OPT_ERROR if an error occured
+int opt_empty(t_opt_list *opt_list, const char *description, void *(*func)(const char *arg))
+{
+    opt_list->empty_opt_arg.short_opt = 0;
+    opt_list->empty_opt_arg.long_opt = NULL;
+    opt_list->empty_opt_arg.description = (char*)description;
+    opt_list->empty_opt_arg.value = NULL;
+    opt_list->empty_opt_arg.func = func;
+    opt_list->empty_opt_arg.arr_elem_size = 0;
+    opt_list->empty_opt_arg.next = NULL;
+    opt_list->empty_opt_arg.prev = NULL;
+    opt_list->empty_opt_arg.is_set = false;
+    opt_list->empty_opt_arg.required = false;
+    opt_list->empty_opt_arg.argument = false;
     return (OPT_SUCCESS);
 }
 
@@ -309,12 +333,24 @@ int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
                 return getOptError(opt_lists, "Invalid option", argv[i]);
             }
         }
-        else
+        else if (opt_lists.main.is_set == false)
         {
+            opt_lists.main.is_set = true;
             if ((long)opt_lists.main.func(argv[i]) == OPT_ERROR)
             {
                 return getOptError(opt_lists, NULL, NULL);
             }
+        }
+        else if (opt_lists.empty_opt_arg.func != NULL)
+        {
+            if ((long)opt_lists.empty_opt_arg.func(argv[i]) == OPT_ERROR)
+            {
+                return getOptError(opt_lists, NULL, NULL);
+            }
+        }
+        else
+        {
+            return getOptError(opt_lists, "Invalid argument", argv[i]);
         }
         i++;
     }

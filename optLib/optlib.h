@@ -1,8 +1,8 @@
 #ifndef OPTLIB_H
 # define OPTLIB_H
 
-#include "../libft/libft.h"
-#include "../logger/ft_color.h"
+#include "libft/libft.h"
+#include "logger/ft_color.h"
 #include <stdio.h>
 
 #define OPT_ERROR 1
@@ -31,10 +31,12 @@ typedef struct {
 typedef struct {
     t_opt *head;
     t_opt *tail;
+    t_opt empty_opt_arg;
     t_opt main;
 }  t_opt_list;
 
 int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(const char *arg));
+int opt_empty(t_opt_list *opt_list, const char *description, void *(*func)(const char *arg));
 void opt_destroy(t_opt_list opt_lists);
 int opt_add_new(const char short_opt, const char *long_opt, const char *description, const bool required, void *(*func)(const char *arg), const bool argument, t_opt_list *opt_list);
 void opt_print_help(const t_opt_list opt_lists);

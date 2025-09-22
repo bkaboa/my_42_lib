@@ -9,6 +9,7 @@ endif()
 option(TEST "Build all tests." OFF)
 option(OPT_OPTION "Build the op library." OFF)
 option(LOGGER_OPTION "Build the logger library." OFF)
+option(GNL_OPTION "Build the gnl library." OFF)
 
 file(GLOB_RECURSE LIBFT_SRCS
     libft/*.c
@@ -20,6 +21,10 @@ set(LIBROPT_SRCS
 
 set(LOGGER_SRCS
     logger/ft_logger.c
+)
+
+set(GNL_SRCS
+    gnl/ft_gnl.c
 )
 
 project(
@@ -56,7 +61,7 @@ if (OPT_OPTION)
     )
     target_include_directories(LIBOPT
         PRIVATE
-            ${CMAKE_CURRENT_LIST_DIR}/libft
+            ${CMAKE_CURRENT_LIST_DIR}
     )
 endif()
 
@@ -66,13 +71,25 @@ if (LOGGER_OPTION)
         PROPERTIES 
             OUTPUT_NAME ${LIBLOGGER_NAME}
     )
-    target_compile_definitions(LIB_LOGGER
-        PRIVATE
-            # WRITE_LOG
-            FILE_LOG
-    )
     target_include_directories(LIB_LOGGER
         PRIVATE
-            ${CMAKE_CURRENT_LIST_DIR}/libft
+            ${CMAKE_CURRENT_LIST_DIR}
+    )
+    target_compile_definitions(LIB_LOGGER
+        PRIVATE
+            WRITE_LOG # replace printf functions with write function
+            # FILE_LOG
+    )
+endif()
+
+if (GNL_OPTION)
+    add_library(LIB_GNL STATIC ${GNL_SRCS})
+    set_target_properties(LIB_GNL
+        PROPERTIES
+            OUTPUT_NAME ${LIBGNL_NAME}
+    )
+    target_include_directories(LIB_GNL
+        PRIVATE
+            ${CMAKE_CURRENT_LIST_DIR}
     )
 endif()
