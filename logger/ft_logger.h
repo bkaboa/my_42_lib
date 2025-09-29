@@ -17,10 +17,11 @@ typedef enum {
     E_LOG_INFO,
     E_LOG_WARNING,
     E_LOG_ERROR,
+    E_LOG_FATAL,
     E_LOG_DEBUG
 } LogLevel;
 
-# define COLOR_MSG(log_level) (log_level) == E_LOG_INFO ? COLOR_WHITE : log_level == E_LOG_WARNING ? COLOR_YELLOW : log_level == E_LOG_ERROR ? COLOR_RED : COLOR_BLUE
+# define COLOR_MSG(log_level) (log_level) == E_LOG_INFO ? COLOR_WHITE : log_level == E_LOG_WARNING ? COLOR_YELLOW : log_level == E_LOG_ERROR ? COLOR_RED : log_level == E_LOG_FATAL ? COLOR_MAGENTA : COLOR_BLUE
 
 # define LOG_STD(log_level) (log_level) == E_LOG_ERROR ? STDERR_FILENO : STDOUT_FILENO
 

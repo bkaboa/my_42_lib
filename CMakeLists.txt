@@ -77,7 +77,7 @@ if (LOGGER_OPTION)
     )
     target_compile_definitions(LIB_LOGGER
         PRIVATE
-            WRITE_LOG # replace printf functions with write function
+            # WRITE_LOG # replace printf functions with write function
             # FILE_LOG
     )
 endif()

@@ -7,6 +7,7 @@ static const char *LOG_LEVELS_MSG[] = {
     "INFO    : ",
     "WARNING : ",
     "ERROR   : ",
+    "FATAL   : ",
     "DEBUG   : "
 };
 

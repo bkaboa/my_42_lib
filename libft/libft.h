@@ -42,6 +42,7 @@ int ft_strncat(char *dest, const char *src, size_t n);
 
 // ft_strdup.c
 int ft_strdup(char **dest, const char *src);
+int ft_strndup(char **dest, const char *src, size_t n);
 
 // ft_srejoin.c
 char *ft_strjoin(const char *str1, const char *str2);

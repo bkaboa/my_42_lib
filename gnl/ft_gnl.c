@@ -58,9 +58,8 @@ int ft_gnl(int fd, char **line)
     {
         if (fd_node->remainder && (newline_pos = ft_strchr(fd_node->remainder, '\n')))
         {
-            *newline_pos = '\0';
-            ft_strdup(line, fd_node->remainder);
-            ft_strdup(&temp, newline_pos + 1);
+            ft_strndup(line, fd_node->remainder, newline_pos - fd_node->remainder + 1);
+            ft_strndup(&temp, newline_pos + 1, BUFFER_SIZE);
             free(fd_node->remainder);
             fd_node->remainder = temp;
             return 1;
