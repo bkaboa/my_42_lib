@@ -1,8 +1,6 @@
 #include "ft_logger.h"
 #include "libft/libft.h"
 
-static Logger *logger;
-
 static const char *LOG_LEVELS_MSG[] = {
     "INFO    : ",
     "WARNING : ",
@@ -23,36 +21,9 @@ static const char *LOG_LEVELS_MSG[] = {
  */
 static void logger_func(const u_int8_t log_level, const bool prefix, const char *__restrict __format, ...) __attribute__((format (printf, 3, 4)));
 
-Logger *get_logger_instance()
+static void logger_destructor(Logger *logger)
 {
-    if (logger == NULL)
-    {
-        logger = (Logger *)malloc(sizeof(Logger));
-        #ifdef FILE_LOG
-            #ifdef WRITE_LOG
-                logger->u_logger.fd = open("log.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
-                if (logger->u_logger.fd < 0)
-                {
-                    perror("Failed to open log file");
-                    exit(EXIT_FAILURE);
-                }
-            #else
-                logger->u_logger.file = fopen("log.txt", "a");
-                if (logger->u_logger.file == NULL)
-                {
-                    perror("Failed to open log file");
-                    exit(EXIT_FAILURE);
-                }
-            #endif
-        #endif
-        logger->log = &logger_func;
-    }
-    return logger;
-}
-
-void logger_destructor()
-{
-    if (logger)
+    if (logger->initialized == true)
     {
         #ifdef FILE_LOG
             #ifdef WRITE_LOG
@@ -61,9 +32,37 @@ void logger_destructor()
                 fclose(logger->u_logger.file);
             #endif
         #endif
-        free(logger);
-        logger = NULL;
     }
+}
+
+Logger *get_logger_instance()
+{
+    static Logger logger = {.initialized = false};
+
+    if (logger.initialized == false)
+    {
+        #ifdef FILE_LOG
+            #ifdef WRITE_LOG
+                logger.u_logger.fd = open("log.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                if (logger.u_logger.fd < 0)
+                {
+                    perror("Failed to open log file");
+                    exit(EXIT_FAILURE);
+                }
+            #else
+                logger.u_logger.file = fopen("log.txt", "a");
+                if (logger.u_logger.file == NULL)
+                {
+                    perror("Failed to open log file");
+                    exit(EXIT_FAILURE);
+                }
+            #endif
+        #endif
+        logger.log = &logger_func;
+        logger.destructor = &logger_destructor;
+        logger.initialized = true;
+    }
+    return &logger;
 }
 
 /** 

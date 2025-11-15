@@ -30,12 +30,14 @@ typedef enum {
  * if you want to log to a file, define FILE_LOG during compilation
  */
 
-typedef struct {
+typedef struct Logger_s{
+    bool initialized;
     union u_logger {
         FILE *file;
         int fd;
     } u_logger;
     void (*log)(const u_int8_t log_level, const bool prefix, const char *msg, ...);
+    void (*destructor)(struct Logger_s *self);
 } Logger;
 
 Logger *get_logger_instance();
