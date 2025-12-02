@@ -147,8 +147,18 @@ Logger *get_logger_instance()
             fprintf(logger->u_logger.file, "%s%s%s", LOG_LEVELS_MSG[log_level], format, COLOR_RESET);
         #endif
         if (prefix)
-            dprintf(LOG_STD(log_level), "%s%s%s%s", COLOR_MSG(log_level), LOG_LEVELS_MSG[log_level], format, COLOR_RESET);
+        {
+            if (log_level == E_LOG_INFO)
+                dprintf(LOG_STD(log_level), "%s%s", LOG_LEVELS_MSG[log_level], format);
+            else
+                dprintf(LOG_STD(log_level), "%s%s%s%s", COLOR_MSG(log_level), LOG_LEVELS_MSG[log_level], format, COLOR_RESET);
+        }
         else
-            dprintf(LOG_STD(log_level), "%s%s%s", COLOR_MSG(log_level), format, COLOR_RESET);
+        {
+            if (log_level == E_LOG_INFO)
+                dprintf(LOG_STD(log_level), "%s", format);
+            else
+                dprintf(LOG_STD(log_level), "%s%s%s", COLOR_MSG(log_level), format, COLOR_RESET);
+        }
     }
 #endif
