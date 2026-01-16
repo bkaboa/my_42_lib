@@ -88,11 +88,16 @@ int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(c
     opt_list->main.long_opt = NULL;
     opt_list->main.description = (char*)description;
     opt_list->main.value = NULL;
-    opt_list->main.func = func;
+    if (func != NULL) {
+        opt_list->main.func = func;
+        opt_list->main.is_set = false;
+    }
+    else {
+        opt_list->main.is_set = true;
+    }
     opt_list->main.arr_elem_size = 0;
     opt_list->main.next = NULL;
     opt_list->main.prev = NULL;
-    opt_list->main.is_set = false;
     return (OPT_SUCCESS);
 }
 
@@ -211,6 +216,43 @@ static int call_func(t_opt_list opt_lists, t_opt *opt, const char *arg, void *ob
         }
     }
     return OPT_SUCCESS;
+}
+
+void opt_print_completion(t_opt_list opt_lists, const char *prefix)
+{
+    bool only_long_opt = false;
+
+    if (prefix == NULL)
+        return;
+    if (prefix[0] == '\0')
+        return;
+    if (opt_lists.head == NULL)
+        return;
+
+    only_long_opt = (prefix[0] == '-' && prefix[1] == '-');
+    t_opt *opt = opt_lists.head;
+    while (opt != NULL)
+    {
+        if (only_long_opt)
+        {
+            if (opt->long_opt != NULL && ft_strncmp(opt->long_opt, prefix + 2, ft_strlen(prefix + 2)) == 0)
+            {
+                dprintf(STDOUT_FILENO, "--%s\n", opt->long_opt);
+            }
+        }
+        else
+        {
+            if (opt->short_opt != 0 && prefix[0] == '-' && prefix[1] == opt->short_opt)
+            {
+                dprintf(STDOUT_FILENO, "-%c\n", opt->short_opt);
+            }
+            if (opt->long_opt != NULL && ft_strncmp(opt->long_opt, prefix + 1, ft_strlen(prefix + 1)) == 0)
+            {
+                dprintf(STDOUT_FILENO, "--%s\n", opt->long_opt);
+            }
+        }
+        opt = opt->next;
+    }
 }
 
 /**

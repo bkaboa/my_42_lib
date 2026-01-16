@@ -46,4 +46,6 @@ void debug_opt(t_opt *opt);
 
 int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists, void *obj);
 
+void opt_print_completion(t_opt_list opt_lists, const char *prefix);
+
 #endif
