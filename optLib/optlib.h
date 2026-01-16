@@ -18,7 +18,7 @@ typedef struct {
     char *long_opt;
     char *description;
     size_t arr_elem_size;
-    void *(*func)(const char *arg);
+    void *(*func)(const char *arg, void *obj);
     bool argument;
     bool required;
     bool is_set;
@@ -35,15 +35,15 @@ typedef struct {
     t_opt main;
 }  t_opt_list;
 
-int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(const char *arg));
-int opt_empty(t_opt_list *opt_list, const char *description, void *(*func)(const char *arg));
+int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(const char *arg, void *obj));
+int opt_empty(t_opt_list *opt_list, const char *description, void *(*func)(const char *arg, void *obj));
 void opt_destroy(t_opt_list opt_lists);
-int opt_add_new(const char short_opt, const char *long_opt, const char *description, const bool required, void *(*func)(const char *arg), const bool argument, t_opt_list *opt_list);
+int opt_add_new(const char short_opt, const char *long_opt, const char *description, const bool required, void *(*func)(const char *arg, void *obj), const bool argument, t_opt_list *opt_list);
 void opt_print_help(const t_opt_list opt_lists);
 
 void debug_opt_list(t_opt_list *opt_lists);
 void debug_opt(t_opt *opt);
 
-int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists);
+int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists, void *obj);
 
 #endif

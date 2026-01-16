@@ -82,7 +82,7 @@ void debug_opt_list(t_opt_list *opt_lists)
  *
  * set the main option of the list can be an array or a single value
  */
-int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(const char *arg))
+int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(const char *arg, void *obj))
 {
     opt_list->main.short_opt = 0;
     opt_list->main.long_opt = NULL;
@@ -111,7 +111,7 @@ int opt_set_main(t_opt_list *opt_list, const char description[], void *(*func)(c
  *
  * you need to put character \'-\' before the short option or the long option
  */
-int opt_add_new(const char short_opt, const char *long_opt, const char *description, const bool required, void *(*func)(const char *arg), const bool argument, t_opt_list *opt_list)
+int opt_add_new(const char short_opt, const char *long_opt, const char *description, const bool required, void *(*func)(const char *arg, void *obj), const bool argument, t_opt_list *opt_list)
 {
     t_opt *tmp = opt_list->tail;
     t_opt *new_opt = malloc(sizeof(t_opt));
@@ -148,7 +148,7 @@ int opt_add_new(const char short_opt, const char *long_opt, const char *descript
 /// @param func 
 /// @return OPT_SUCCESS if the empty option is set successfully //
 /// @return OPT_ERROR if an error occured
-int opt_empty(t_opt_list *opt_list, const char *description, void *(*func)(const char *arg))
+int opt_empty(t_opt_list *opt_list, const char *description, void *(*func)(const char *arg, void *obj))
 {
     opt_list->empty_opt_arg.short_opt = 0;
     opt_list->empty_opt_arg.long_opt = NULL;
@@ -190,7 +190,7 @@ void opt_print_help(const t_opt_list opt_lists)
     }
 }
 
-static int call_func(t_opt_list opt_lists, t_opt *opt, const char *arg)
+static int call_func(t_opt_list opt_lists, t_opt *opt, const char *arg, void *obj)
 {
     if (opt->func == NULL)
     {
@@ -198,14 +198,14 @@ static int call_func(t_opt_list opt_lists, t_opt *opt, const char *arg)
     }
     if (opt->argument)
     {
-        if ((long)opt->func((void*)arg) == OPT_ERROR)
+        if ((long)opt->func((void*)arg, obj) == OPT_ERROR)
         {
             return getOptError(opt_lists, NULL, NULL);
         }
     }
     else
     {
-        if ((long)opt->func(NULL) == OPT_ERROR)
+        if ((long)opt->func(NULL, obj) == OPT_ERROR)
         {
             return getOptError(opt_lists, NULL, NULL);
         }
@@ -225,7 +225,7 @@ static int call_func(t_opt_list opt_lists, t_opt *opt, const char *arg)
  * take the options from the command line
  * be aware the options list is sanitized after the call (remove the unused options)
  */
-int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
+int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists, void *obj) {
     if (argv == NULL)
         return (OPT_ERROR);
 
@@ -267,14 +267,14 @@ int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
                             {
                                 arg_value++;
                             }
-                            if (call_func(opt_lists, opt, arg_value) == OPT_ERROR)
+                            if (call_func(opt_lists, opt, arg_value, obj) == OPT_ERROR)
                             {
                                 return OPT_ERROR;
                             }
                         }
                         else
                         {
-                            if (call_func(opt_lists, opt, NULL) == OPT_ERROR)
+                            if (call_func(opt_lists, opt, NULL, obj) == OPT_ERROR)
                             {
                                 return OPT_ERROR;
                             }
@@ -304,7 +304,7 @@ int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
                                 arg_value = argv[i + 1];
                                 i++;
                             }
-                            if (call_func(opt_lists, opt, arg_value) == OPT_ERROR)
+                            if (call_func(opt_lists, opt, arg_value, obj) == OPT_ERROR)
                             {
                                 return OPT_ERROR;
                             }
@@ -312,7 +312,7 @@ int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
                         }
                         else
                         {
-                            if (call_func(opt_lists, opt, NULL) == OPT_ERROR)
+                            if (call_func(opt_lists, opt, NULL, obj) == OPT_ERROR)
                             {
                                 return OPT_ERROR;
                             }
@@ -336,14 +336,14 @@ int ft_getopt(const char **argv, const int argc, t_opt_list opt_lists) {
         else if (opt_lists.main.is_set == false)
         {
             opt_lists.main.is_set = true;
-            if ((long)opt_lists.main.func(argv[i]) == OPT_ERROR)
+            if ((long)opt_lists.main.func(argv[i], obj) == OPT_ERROR)
             {
                 return getOptError(opt_lists, NULL, NULL);
             }
         }
         else if (opt_lists.empty_opt_arg.func != NULL)
         {
-            if ((long)opt_lists.empty_opt_arg.func(argv[i]) == OPT_ERROR)
+            if ((long)opt_lists.empty_opt_arg.func(argv[i], obj) == OPT_ERROR)
             {
                 return getOptError(opt_lists, NULL, NULL);
             }
