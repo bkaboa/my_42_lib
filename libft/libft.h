@@ -35,6 +35,9 @@ int ft_strcmp(const char *s1, const char *s2);
 int ft_strncmp(const char *s1, const char *s2, size_t n);
 int ft_strcoll(const char *s1, const char *s2);
 int ft_strncoll(const char *s1, const char *s2, size_t n);
+int ft_strlowercasecmp(const char *s1, const char *s2);
+int ft_struppercasecmp(const char *s1, const char *s2);
+int ft_strloweralphanumcmp(const char *s1, const char *s2);
 
 // ft_strcat.c
 int ft_strcat(char *dest, const char *src);
