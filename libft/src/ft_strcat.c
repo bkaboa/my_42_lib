@@ -6,6 +6,8 @@ int ft_strcat(char *dest, const char *src)
     size_t src_len = ft_strlen(src);
     size_t i = 0;
 
+    if (dest == NULL || src == NULL)
+        return (-1);
     while (i < src_len)
     {
         dest[dest_len + i] = src[i];
