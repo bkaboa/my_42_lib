@@ -60,6 +60,28 @@
                 "LOGGER_OPTION": "ON",
                 "OPT_OPTION": "OFF"
             }
+        },
+        {
+            "name": "tests",
+            "hidden": false,
+            "description": "Build the library with unit tests (CTest)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "TEST": "ON",
+                "GNL_OPTION": "ON",
+                "OPT_OPTION": "ON",
+                "LOGGER_OPTION": "ON"
+            }
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "tests",
+            "configurePreset": "tests",
+            "output": {
+                "outputOnFailure": true
+            }
         }
     ]
 }

@@ -93,3 +93,8 @@ if (GNL_OPTION)
             ${CMAKE_CURRENT_LIST_DIR}
     )
 endif()
+
+if (TEST)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

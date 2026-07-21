@@ -30,6 +30,9 @@ bool    ft_ispunct(const int c);
 
 // STRINGS FUNCTIONS
 
+// ft_strcpy.c
+int ft_strncpy(char *dest, const char *src, size_t n);
+
 // ft_strcmp.c
 int ft_strcmp(const char *s1, const char *s2);
 int ft_strncmp(const char *s1, const char *s2, size_t n);
