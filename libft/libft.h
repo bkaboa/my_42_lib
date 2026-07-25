@@ -57,7 +57,8 @@ char *ft_strjoin(const char *str1, const char *str2);
 size_t ft_strlen(const char *str);
 
 // ft_numlen.c
-int ft_numlen(int n);
+size_t ft_numlen(ssize_t n);
+size_t ft_numlen_base(ssize_t n, size_t base);
 
 // ft_strchr.c
 char *ft_strchr(const char *s, int c);
@@ -115,7 +116,8 @@ void    ft_putstr(const char *str);
 int ft_atoi(const char *str);
 long ft_atol(const char *str);
 int ft_atoi_base(const char *str, int base);
-char *ft_itoa(const long n);
+char *ft_itoa(const int n);
+char *ft_itoa_base(const int n, const char *base);
 
 /* -------------------------------- */
 

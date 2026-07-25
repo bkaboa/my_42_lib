@@ -1,10 +1,9 @@
 #include "libft.h"
 
-int ft_numlen(int n)
+size_t ft_numlen(ssize_t n)
 {
-    int len;
+    size_t len = 0;
 
-    len = 0;
     if (n < 0)
     {
         n = -n;
@@ -15,5 +14,22 @@ int ft_numlen(int n)
         n /= 10;
         len++;
     }
-    return (len);
+    return len;
+}
+
+size_t ft_numlen_base(ssize_t n, size_t base)
+{
+    size_t len = 0;
+
+    if (n < 0)
+    {
+        n = -n;
+        len++;
+    }
+    while (n > 0)
+    {
+        n /= base;
+        len++;
+    }
+    return len;
 }
