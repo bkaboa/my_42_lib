@@ -1,8 +1,8 @@
 #ifndef FT_GNL_H
 # define FT_GNL_H
 
-# include "logger/ft_logger.h"
-# include "libft/libft.h"
+# include "ft_logger.h"
+# include "libft.h"
 
 # define BUFFER_SIZE 42
 

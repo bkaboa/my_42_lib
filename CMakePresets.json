@@ -10,7 +10,8 @@
             "cacheVariables": {
                 "GNL_OPTION": "OFF",
                 "OPT_OPTION": "OFF",
-                "LOGGER_OPTION": "OFF"
+                "LOGGER_OPTION": "OFF",
+                "SORT_OPTION": "OFF"
             }
         },
         {
@@ -22,7 +23,8 @@
             "cacheVariables": {
                 "GNL_OPTION": "ON",
                 "OPT_OPTION": "ON",
-                "LOGGER_OPTION": "ON"
+                "LOGGER_OPTION": "ON",
+                "SORT_OPTION": "ON"
             }
         },
         {
@@ -34,7 +36,8 @@
             "cacheVariables": {
                 "GNL_OPTION": "OFF",
                 "OPT_OPTION": "ON",
-                "LOGGER_OPTION": "OFF"
+                "LOGGER_OPTION": "OFF",
+                "SORT_OPTION": "OFF"
             }
         },
         {
@@ -46,7 +49,8 @@
             "cacheVariables": {
                 "GNL_OPTION": "OFF",
                 "LOGGER_OPTION": "ON",
-                "OPT_OPTION": "OFF"
+                "OPT_OPTION": "OFF",
+                "SORT_OPTION": "OFF"
             }
         },
         {
@@ -58,7 +62,21 @@
             "cacheVariables": {
                 "GNL_OPTION": "ON",
                 "LOGGER_OPTION": "ON",
-                "OPT_OPTION": "OFF"
+                "OPT_OPTION": "OFF",
+                "SORT_OPTION": "OFF"
+            }
+        },
+        {
+            "name": "sort",
+            "hidden": false,
+            "description": "Build the library with sort",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "GNL_OPTION": "OFF",
+                "LOGGER_OPTION": "OFF",
+                "OPT_OPTION": "OFF",
+                "SORT_OPTION": "ON"
             }
         },
         {
@@ -71,7 +89,8 @@
                 "TEST": "ON",
                 "GNL_OPTION": "ON",
                 "OPT_OPTION": "ON",
-                "LOGGER_OPTION": "ON"
+                "LOGGER_OPTION": "ON",
+                "SORT_OPTION": "ON"
             }
         }
     ],

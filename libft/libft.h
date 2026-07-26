@@ -9,6 +9,9 @@
 
 #include <stdbool.h>
 
+# define BASE_10 "0123456789"
+# define BASE_16 "0123456789abcdef"
+
 // ft_is.c
 bool    ft_isnumber(const char *str);
 bool    ft_isdecimal(const char *str);
@@ -116,8 +119,14 @@ void    ft_putstr(const char *str);
 int ft_atoi(const char *str);
 long ft_atol(const char *str);
 int ft_atoi_base(const char *str, int base);
+
+// ft_itoa.c
 char *ft_itoa(const int n);
 char *ft_itoa_base(const int n, const char *base);
+char *ft_ultoa_base(const size_t n, const char *base);
+char *ft_ultoa(const size_t n);
+char *ft_ltoa(const ssize_t n);
+char *ft_ltoa_base(const ssize_t n, const char *base);
 
 /* -------------------------------- */
 

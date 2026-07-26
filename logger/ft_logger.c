@@ -1,5 +1,5 @@
 #include "ft_logger.h"
-#include "libft/libft.h"
+#include "libft.h"
 
 static const char *LOG_LEVELS_MSG[] = {
     "INFO    : ",

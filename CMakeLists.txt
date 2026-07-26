@@ -10,21 +10,26 @@ option(TEST "Build all tests." OFF)
 option(OPT_OPTION "Build the op library." OFF)
 option(LOGGER_OPTION "Build the logger library." OFF)
 option(GNL_OPTION "Build the gnl library." OFF)
+option(SORT_OPTION "Build the sort library." OFF)
 
 file(GLOB_RECURSE LIBFT_SRCS
     libft/*.c
 )
 
-set(LIBROPT_SRCS
-    optLib/ft_getopt.c
+file(GLOB_RECURSE SORT_SRCS
+    sort/*.c
 )
 
-set(LOGGER_SRCS
-    logger/ft_logger.c
+file(GLOB_RECURSE OPT_SRCS
+    optLib/*.c
 )
 
-set(GNL_SRCS
-    gnl/ft_gnl.c
+file(GLOB_RECURSE LOGGER_SRCS
+    logger/*.c
+)
+
+file(GLOB_RECURSE GNL_SRCS
+    gnl/*.c
 )
 
 project(
@@ -53,44 +58,65 @@ target_include_directories(LIBFT
         ${CMAKE_CURRENT_LIST_DIR}/libft
 )
 
-if (OPT_OPTION)
-    add_library(LIBOPT STATIC ${LIBROPT_SRCS})
-    set_target_properties(LIBOPT
-    PROPERTIES
-        OUTPUT_NAME ${LIBOPT_NAME}
-    )
-    target_include_directories(LIBOPT
-        PRIVATE
-            ${CMAKE_CURRENT_LIST_DIR}
-    )
-endif()
-
 if (LOGGER_OPTION)
-    add_library(LIB_LOGGER STATIC ${LOGGER_SRCS})
-    set_target_properties(LIB_LOGGER
+    add_library(LOGGER STATIC ${LOGGER_SRCS})
+    set_target_properties(LOGGER
         PROPERTIES 
             OUTPUT_NAME ${LIBLOGGER_NAME}
     )
-    target_include_directories(LIB_LOGGER
+    target_include_directories(LOGGER
         PRIVATE
-            ${CMAKE_CURRENT_LIST_DIR}
+            ${CMAKE_CURRENT_LIST_DIR}/logger
+        PRIVATE
+            ${CMAKE_CURRENT_LIST_DIR}/libft
     )
-    target_compile_definitions(LIB_LOGGER
+    target_compile_definitions(LOGGER
         PRIVATE
             # WRITE_LOG # replace printf functions with write function
             # FILE_LOG
     )
 endif()
 
+if (OPT_OPTION)
+    add_library(LIBOPT STATIC ${OPT_SRCS})
+    set_target_properties(LIBOPT
+        PROPERTIES
+            OUTPUT_NAME ${LIBOPT_NAME}
+    )
+    target_include_directories(LIBOPT
+        PUBLIC
+            ${CMAKE_CURRENT_LIST_DIR}/optLib
+            ${CMAKE_CURRENT_LIST_DIR}/libft
+            ${CMAKE_CURRENT_LIST_DIR}/logger
+    )
+endif()
+
+if (SORT_OPTION)
+    add_library(SORT STATIC ${SORT_SRCS})
+    set_target_properties(SORT
+        PROPERTIES
+            OUTPUT_NAME ${LIBSORT_NAME}
+    )
+    target_include_directories(SORT
+        PUBLIC
+            ${CMAKE_CURRENT_LIST_DIR}/sort
+        PRIVATE
+            ${CMAKE_CURRENT_LIST_DIR}/libft
+    )
+endif()
+
 if (GNL_OPTION)
-    add_library(LIB_GNL STATIC ${GNL_SRCS})
-    set_target_properties(LIB_GNL
+    add_library(GNL STATIC ${GNL_SRCS})
+    set_target_properties(GNL
         PROPERTIES
             OUTPUT_NAME ${LIBGNL_NAME}
     )
-    target_include_directories(LIB_GNL
+    target_include_directories(GNL
         PRIVATE
-            ${CMAKE_CURRENT_LIST_DIR}
+            ${CMAKE_CURRENT_LIST_DIR}/gnl
+        PRIVATE
+            ${CMAKE_CURRENT_LIST_DIR}/libft
+            ${CMAKE_CURRENT_LIST_DIR}/logger
     )
 endif()
 

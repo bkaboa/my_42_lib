@@ -1,9 +1,9 @@
 #ifndef OPTLIB_H
 # define OPTLIB_H
 
-#include "libft/libft.h"
-#include "logger/ft_color.h"
+#include "libft.h"
 #include <stdio.h>
+#include "ft_logger.h"
 
 #define OPT_ERROR 1
 #define OPT_SUCCESS 0

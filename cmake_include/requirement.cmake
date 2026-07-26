@@ -5,6 +5,7 @@ set( LIBFT_NAME "ft")
 set( LIBOPT_NAME "opt")
 set( LIBLOGGER_NAME "logger")
 set( LIBGNL_NAME "gnl" )
+set( LIBSORT_NAME "sort" )
 
 
 if (NOT CMAKE_GENERATOR STREQUAL "Unix Makefiles")
