@@ -152,18 +152,14 @@ int ft_strloweralphanumcmp(const char *s1, const char *s2)
         return (0);
     if (s1 == NULL || s2 == NULL)
         return (-1);
-    while (*s1 && *s2)
+    while (*s1 || *s2)
     {
-        if (!ft_isalnum(*s1))
-        {
+        while (*s1 && !ft_isalnum(*s1))
             s1++;
-            continue;
-        }
-        if (!ft_isalnum(*s2))
-        {
+        while (*s2 && !ft_isalnum(*s2))
             s2++;
-            continue;
-        }
+        if (!*s1 || !*s2)
+            return ((unsigned char)*s1 - (unsigned char)*s2);
         char c1 = (*s1 >= 'a' && *s1 <= 'z') ? (*s1 - 32) : *s1;
         char c2 = (*s2 >= 'a' && *s2 <= 'z') ? (*s2 - 32) : *s2;
         if (c1 != c2)
@@ -171,5 +167,5 @@ int ft_strloweralphanumcmp(const char *s1, const char *s2)
         s1++;
         s2++;
     }
-    return (*s1 - *s2);
+    return (0);
 }
